@@ -1,7 +1,10 @@
 package com.nila.ghostradar.scare
 
+import android.os.SystemClock
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nila.ghostradar.detection.Box
 import com.nila.ghostradar.detection.DetectedObject
 import com.nila.ghostradar.detection.DetectionFrame
 import com.nila.ghostradar.detection.DetectionGate
@@ -32,7 +35,20 @@ class GhostViewModel(
     private var scareTimer: Job? = null
     private var cooldownTimer: Job? = null
 
-    fun onFrame(frame: DetectionFrame) {
+    private var fakeTargetUntilMs = 0L
+
+    /**
+     * Debug/tuning aid: pretend a teddy bear sits in the middle of the frame for [durationMs].
+     * Lets Hari and Nila see the whole scare without the doll.
+     */
+    fun injectFakeTarget(durationMs: Long = 3_000L) {
+        // Frame timestamps are uptimeMillis, so the deadline can be too.
+        fakeTargetUntilMs = SystemClock.uptimeMillis() + durationMs
+        Log.i("GhostRadar", "debug: fake target injected for $durationMs ms")
+    }
+
+    fun onFrame(rawFrame: DetectionFrame) {
+        val frame = if (rawFrame.timestampMs < fakeTargetUntilMs) rawFrame.withFakeBear() else rawFrame
         _lastFrame.value = frame
         val out = gate.onFrame(frame.objects, frame.timestampMs)
         val target = out.target?.toTarget(frame.imageWidth, frame.imageHeight)
@@ -74,10 +90,23 @@ class GhostViewModel(
     }
 }
 
+private fun DetectionFrame.withFakeBear(): DetectionFrame {
+    val w = imageWidth * 0.28f
+    val h = imageHeight * 0.26f
+    val fake = DetectedObject(
+        label = "teddy bear",
+        score = 0.99f,
+        box = Box(imageWidth / 2f - w / 2f, imageHeight * 0.58f - h / 2f, imageWidth / 2f + w / 2f, imageHeight * 0.58f + h / 2f),
+    )
+    return copy(objects = listOf(fake) + objects)
+}
+
 internal fun DetectedObject.toTarget(imageWidth: Int, imageHeight: Int): Target = Target(
     label = label,
     score = score,
     box = box,
     horizontalOffset = ((box.centerX / imageWidth) * 2f - 1f).coerceIn(-1f, 1f),
     proximity = (box.height / imageHeight).coerceIn(0f, 1f),
+    imageWidth = imageWidth,
+    imageHeight = imageHeight,
 )

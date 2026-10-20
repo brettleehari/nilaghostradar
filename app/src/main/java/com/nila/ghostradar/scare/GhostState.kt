@@ -12,6 +12,9 @@ data class Target(
     val horizontalOffset: Float,
     /** Box height as a fraction of frame height, 0..1. Bigger means closer. Drives the fake distance. */
     val proximity: Float,
+    /** Size of the upright image [box] refers to. */
+    val imageWidth: Int = 480,
+    val imageHeight: Int = 640,
 )
 
 /** The one state the whole app renders from. */
