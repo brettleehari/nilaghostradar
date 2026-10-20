@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- The app is useless without a camera. -->
     <uses-feature android:name="android.hardware.camera" android:required="true" />
@@ -7,6 +8,11 @@
     <!-- CAMERA and VIBRATE only. Never add INTERNET (see PROJECT.md). -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- MediaPipe's tasks-core pulls in Google DataTransport, whose manifest asks for network
+         permissions. Nothing in this app may touch the network, so strip them from the merge. -->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
 
     <application
         android:allowBackup="false"
