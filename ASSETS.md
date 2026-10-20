@@ -8,6 +8,7 @@ Every image, sound and model shipped in the app is listed here with its source a
 | Object detection model | `app/src/main/assets/efficientdet_lite0_int8.tflite` | MediaPipe EfficientDet-Lite0 int8 | Apache-2.0 | Final |
 | Evil face | `app/src/main/res/drawable-nodpi/evil_face.png` (1024 px, transparent) | Generated in-repo: cracked porcelain doll, hollow eyes, needle grin | Project's own | v1 — awaiting Nila's sign-off or replacement |
 | Scare track | `app/src/main/res/raw/scare_track.wav` (10 s, 22.05 kHz mono) | Synthesized in-repo: sub drone, dissonant cluster, whispers, accelerating heartbeat, broken music box, hit | Project's own | v1 — awaiting Nila's sign-off or replacement |
+| Radar ambience loop | `app/src/main/res/raw/radar_ambience.wav` (≈22 s seamless loop) | Composed and synthesized in-repo: worn music box in D minor with a flat second, mechanism hiss, room delay. An original melody, not any film score. | Project's own | v1 — Hari asked for the Annabelle cue "I Can See You"; that is copyrighted (Joseph Bishara / WaterTower) and cannot ship. A private build may swap the file locally. |
 | Launcher icon | `app/src/main/res/drawable/ic_launcher_foreground.xml` + `mipmap-anydpi-v26/` | Drawn in-repo: radar rings, sweep, ghost | Project's own | v1 — awaiting Nila's sign-off |
 | Play icon (512×512) | `store/icon_512.png` | Same design, rasterised | Project's own | v1 |
 | Feature graphic (1024×500) | `store/feature_graphic_1024x500.png` | Same design + title + tagline | Project's own | v1 — copy is Nila's call |

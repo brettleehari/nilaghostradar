@@ -126,6 +126,12 @@ Read this before starting any task. Append after finishing: what changed, what w
 **Hardware notes**
 - USB on this phone drops under screencap bursts; keep adb captures sparse.
 
+## 2026-10-20 — Radar background music
+
+- `audio/AmbientAudio`: looping, 60 % volume, plays while Searching, pauses on Locked/Scaring so the stinger lands on silence, resumes on Searching. Preloaded with the scare track.
+- `res/raw/radar_ambience.wav`: original worn-music-box loop (21 s, seamless). Hari asked for Annabelle's "I Can See You": copyrighted, so it cannot be bundled. For a private sideload he can overwrite the file locally; never commit it.
+- Verified on the moto g: no MediaPlayer errors, audio tracks active while on the radar.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?

@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nila.ghostradar.audio.AmbientAudio
 import com.nila.ghostradar.audio.ScareAudio
 import com.nila.ghostradar.camera.CameraView
 import com.nila.ghostradar.camera.ResultsOverlay
@@ -119,23 +120,27 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     val audio = remember {
         ScareAudio(context, R.raw.scare_track, onFinished = viewModel::onAudioFinished)
     }
+    val ambience = remember { AmbientAudio(context, R.raw.radar_ambience) }
 
     // Preload during the radar phase; release with the screen.
     DisposableEffect(audio) {
         audio.preload()
+        ambience.preload()
         onDispose {
             audio.release()
+            ambience.release()
             haptics.stop()
         }
     }
 
-    // Side effects on state entry.
+    // Side effects on state entry. The ambience stops the moment a lock happens so the stinger
+    // lands on silence.
     LaunchedEffect(state::class) {
         when (state) {
-            is GhostState.Scaring -> { haptics.scare(); audio.play() }
+            GhostState.Searching -> { haptics.stop(); audio.stop(); ambience.play() }
+            is GhostState.Locked -> ambience.pause()
+            is GhostState.Scaring -> { ambience.pause(); haptics.scare(); audio.play() }
             is GhostState.Cooldown -> haptics.stop()
-            GhostState.Searching -> { haptics.stop(); audio.stop() }
-            is GhostState.Locked -> Unit
         }
     }
 
