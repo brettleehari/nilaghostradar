@@ -73,6 +73,29 @@ Read this before starting any task. Append after finishing: what changed, what w
 - The placeholder darkening behind the face (black, up to ~45 %): keep, change, or drop?
 - Should the radar stay faintly visible during the scare (HUD style) or vanish completely as now?
 
+## 2026-10-20 — P4 part 1: release pipeline and AAB
+
+**What changed**
+- Upload keystore generated at `~/keystores/ghostradar-upload.jks` (RSA 2048, valid to 2054, alias `upload`); credentials in `keystore.properties` (gitignored). `app/build.gradle.kts` reads it and signs release builds; without the file, release builds are unsigned.
+- Bundle splits: ABI, density, language.
+- **Network permissions stripped.** The merged manifest had picked up `INTERNET` and `ACCESS_NETWORK_STATE` from `com.google.android.datatransport` (a `tasks-core` transitive). Removed with `tools:node="remove"`; the release APK now declares only CAMERA and VIBRATE.
+- **R8 crash fixed.** The first release build died in `Graph.<clinit>` with Flogger's "no caller found on the stack": R8 had inlined/renamed Flogger's caller-finder. `-keep class com.google.common.flogger.** { *; }` plus attribute keeps fixed it. Lesson: always smoke-test the release APK, never just the debug one.
+- Open-source notices screen (`LicensesScreen`, `res/raw/third_party_notices.txt`, ⓘ button top-right on every screen). Placement is placeholder; Nila decides.
+- `PLAY_LISTING.md`: build steps, permanent decisions, listing draft, data-safety and IARC answers, pre-launch checklist.
+
+**Artifacts (not committed, in `app/build/outputs/`)**
+- `bundle/release/app-release.aab` — 30.0 MB, signed by the upload key (jarsigner verified).
+- `apk/release/app-release.apk` — 55.7 MB universal, signed (apksigner v2 verified), `zipalign -c -P 16` passes.
+- Estimated arm64 install ≈ 20 MB (11 MB MediaPipe native, 4.6 MB model, 4.5 MB dex).
+
+**Tested on the emulator (release APK, R8-minified)**
+- Camera binds, detector loads, frames flow, radar renders, licences screen opens. No crash. (The "System UI isn't responding" dialog seen once is the emulator's own SystemUI under the software GPU, not the app.)
+
+**Blocked on Hari / Nila before upload**
+- Final applicationId (placeholder `com.nila.ghostradar` is permanent once uploaded).
+- Placeholder face, track and icon must be replaced before anything beyond the internal track.
+- Day-one doll test on a real phone.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?
@@ -81,3 +104,5 @@ Read this before starting any task. Append after finishing: what changed, what w
 - Radar colour: green, or something else? (Placeholder is `#39FF14`.)
 - Camera rationale copy: current placeholder reads "The camera looks for ghosts hiding in toys. Everything happens on this phone. Nothing is recorded, saved, or sent anywhere." OK, or does she want it spookier?
 - Launcher icon: the current one is a placeholder (green rings + sweep). What does she want?
+- Where should the ⓘ (open-source notices) button live? Top-right on every screen for now.
+- Store listing copy and screenshots (see PLAY_LISTING.md).
