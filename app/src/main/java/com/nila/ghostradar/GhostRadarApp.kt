@@ -22,16 +22,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nila.ghostradar.camera.CameraView
 import com.nila.ghostradar.camera.ResultsOverlay
 import com.nila.ghostradar.detection.DetectionFrame
-import com.nila.ghostradar.detection.DetectionGate
 import com.nila.ghostradar.detection.DetectionLogger
+import com.nila.ghostradar.radar.RadarScreen
+import com.nila.ghostradar.scare.GhostState
+import com.nila.ghostradar.scare.GhostViewModel
 
-/** Root of the app: rationale → permission → camera. The radar screen replaces this in P1. */
+/** Root of the app: rationale → permission → hunt. */
 @Composable
 fun GhostRadarApp() {
     val context = LocalContext.current
@@ -48,7 +51,7 @@ fun GhostRadarApp() {
     }
 
     if (granted) {
-        DetectionDebugScreen()
+        HuntScreen()
     } else {
         CameraRationaleScreen(
             deniedOnce = deniedOnce,
@@ -58,15 +61,15 @@ fun GhostRadarApp() {
 }
 
 /**
- * P0 screen: live camera, every detection boxed, top-3 labels on screen and in Logcat, and the
- * gate's lock state. This is the day-one doll test harness; it is replaced by the radar in P1.
+ * Camera analysing underneath, radar on top. The radar is opaque in v1 ("full-screen first");
+ * drop [RADAR_BACKGROUND_ALPHA] to see the preview through it. Debug builds keep the label panel
+ * for the day-one doll test.
  */
 @Composable
-fun DetectionDebugScreen() {
+fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val lastFrame by viewModel.lastFrame.collectAsStateWithLifecycle()
     val logger = remember { DetectionLogger() }
-    val gate = remember { DetectionGate() }
-    var latest by remember { mutableStateOf<DetectionFrame?>(null) }
-    var locked by remember { mutableStateOf(false) }
 
     Box(
         Modifier
@@ -77,41 +80,51 @@ fun DetectionDebugScreen() {
             useGpu = BuildConfig.DEBUG && USE_GPU_DELEGATE,
             onFrame = { frame ->
                 logger.log(frame)
-                locked = gate.onFrame(frame.objects, frame.timestampMs).locked
-                latest = frame
+                viewModel.onFrame(frame)
             },
-            overlay = { frame -> frame?.let { ResultsOverlay(it) } },
+            overlay = { frame ->
+                if (BuildConfig.DEBUG && SHOW_DEBUG_BOXES) frame?.let { ResultsOverlay(it) }
+            },
         )
+        RadarScreen(state = state, backgroundAlpha = RADAR_BACKGROUND_ALPHA)
+        if (BuildConfig.DEBUG) DebugPanel(lastFrame, state)
+    }
+}
 
-        Column(
-            Modifier
-                .align(Alignment.TopStart)
-                .safeDrawingPadding()
-                .padding(12.dp)
-                .background(Color.Black.copy(alpha = 0.6f))
-                .padding(8.dp),
-        ) {
-            val f = latest
-            if (f == null) {
-                Text(stringResource(R.string.debug_waiting), style = MaterialTheme.typography.labelSmall)
-            } else {
+@Composable
+private fun DebugPanel(frame: DetectionFrame?, state: GhostState) {
+    Column(
+        Modifier
+            .safeDrawingPadding()
+            .padding(12.dp)
+            .background(Color.Black.copy(alpha = 0.6f))
+            .padding(8.dp),
+    ) {
+        Text(
+            text = state::class.simpleName ?: "?",
+            style = MaterialTheme.typography.labelSmall,
+            color = if (state is GhostState.Searching) Color.White else MaterialTheme.colorScheme.primary,
+        )
+        if (frame == null) {
+            Text(androidx.compose.ui.res.stringResource(R.string.debug_waiting), style = MaterialTheme.typography.labelSmall)
+        } else {
+            Text(
+                text = "${frame.inferenceTimeMs} ms  ${frame.imageWidth}x${frame.imageHeight}",
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White,
+            )
+            for (o in frame.objects.take(3)) {
                 Text(
-                    text = "${f.inferenceTimeMs} ms  ${f.imageWidth}x${f.imageHeight}  " +
-                        if (locked) "LOCKED" else "searching",
+                    text = "%-14s %.2f".format(o.label, o.score),
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (locked) MaterialTheme.colorScheme.primary else Color.White,
+                    color = Color.White,
                 )
-                for (o in f.objects.take(3)) {
-                    Text(
-                        text = "%-14s %.2f".format(o.label, o.score),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.White,
-                    )
-                }
             }
         }
     }
 }
 
-/** Debug flag: flip to true to try the GPU delegate. CPU is the default per PROJECT.md. */
+/** Debug flags. CPU delegate and an opaque radar are the v1 defaults. */
 private const val USE_GPU_DELEGATE = false
+private const val SHOW_DEBUG_BOXES = true
+private const val RADAR_BACKGROUND_ALPHA = 1f
