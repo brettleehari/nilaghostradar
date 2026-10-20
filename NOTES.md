@@ -50,6 +50,29 @@ Read this before starting any task. Append after finishing: what changed, what w
 - Arrow sits in the middle of the dish. OK, or above it like Find My?
 - Sweep speed is one turn per 2 s. Faster, slower?
 
+## 2026-10-20 — P1 part 2: haptics, audio, scare overlay, placeholders
+
+**What changed**
+- `haptics/ScareHaptics`: VibratorManager (API 31+) / Vibrator fallback, amplitude waveform (jolt, stutter, long rumble ≈ 2.1 s) matching the scare timeline.
+- `audio/ScareAudio`: MediaPlayer preloaded (prepareAsync) when the hunt screen opens, `play()` on Scaring, completion → `GhostViewModel.onAudioFinished()` so cooldown ends at song end or 8 s. Plays once; loop is still Nila's call.
+- `scare/ScareOverlay`: evil face over the target box inside the camera preview's bounds. Timeline from `ScareConfig`: crossfade in 300 ms while rising 15 % of box height over 600 ms, then scale 1→5× toward preview centre over 1 500 ms with ±3° jitter, fade out 400 ms on Cooldown. Follows the live box while Scaring. Placeholder darkening behind the face.
+- `HuntScreen`: radar is opaque while Searching and fades out (150 ms) the moment a lock happens so the preview and face show; fades back (600 ms) on Searching. Scaring starts haptics + audio; Searching stops both.
+- Debug builds: **long-press anywhere** injects a fake "teddy bear" in the centre of the frame for 3 s, so the scare can be seen without the doll. The gesture layer sits above PreviewView, which otherwise eats touches.
+- `Target` now carries the image size so the overlay can map its box without the frame.
+- Placeholder assets, generated in-repo, **never to ship** (see ASSETS.md): `drawable-nodpi/evil_face_placeholder.png` (drawn: pale oval, hollow black eyes, jagged grin) and `raw/scare_track_placeholder.wav` (8 s synthesized: detuned low drone, minor-second clash, speeding heartbeat, noise swell, final hit).
+
+**Tested on the emulator (arivu_4gb)**
+- Long-press → Locked → Scaring → Cooldown → Searching, verified with screenshots: radar fades, face appears over the fake target, grows toward centre with darkening, fades on Cooldown, radar returns. No crashes, no MediaPlayer errors in logcat.
+- Haptics cannot be felt and audio cannot be heard on the emulator; only "no errors" is verified. Both need a phone.
+- Emulator throughput varies wildly between boots (16 ms to 800 ms per frame). Not meaningful for performance.
+
+**P1 status:** complete with placeholders. Next is the real-device pass (below), then P2 with Nila's assets.
+
+**New questions for Nila**
+- Song once or loop? Currently once; the scare visuals end after ~2.1 s and the song keeps playing through cooldown.
+- The placeholder darkening behind the face (black, up to ~45 %): keep, change, or drop?
+- Should the radar stay faintly visible during the scare (HUD style) or vanish completely as now?
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?
