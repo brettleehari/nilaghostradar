@@ -1,0 +1,39 @@
+# NOTES.md — running log
+
+Read this before starting any task. Append after finishing: what changed, what was tested on a device, new questions for Nila.
+
+## 2026-10-20 — P0 scaffold
+
+**What changed**
+- Forked `google-ai-edge/mediapipe-samples` → `examples/object_detection/android-jetpack-compose` at commit `1675dd30` (Apache-2.0, licence kept in `LICENSE-upstream-mediapipe-samples.txt`). Only the camera pipeline, detector wrapper and the image→preview box mapping were ported; all sample UI, gallery/video modes, Lite2 and `download_models.gradle` were dropped.
+- Package renamed to the placeholder `com.nila.ghostradar`. **Hari: pick the final applicationId before the first Play upload; it is permanent.**
+- Build rewritten: Gradle 9.8.2, AGP 9.4.1 (built-in Kotlin, so no `kotlin.android` plugin), Kotlin 2.4.21, Compose BOM 2026.09.00, CameraX 1.6.2, MediaPipe `tasks-vision` 1.0.0. Kotlin DSL + version catalog. compileSdk 37 (current AndroidX requires ≥ 37), targetSdk 36, minSdk 26.
+- `efficientdet_lite0_int8.tflite` (4.6 MB, from `storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/`) committed under `app/src/main/assets/`, stored uncompressed (`noCompress += "tflite"`, verified in the APK).
+- Code: `camera/CameraView` (CameraX, 4:3, 640×480 analysis, keep-only-latest, RGBA), `camera/CoordinateMapper` (fit, image→preview, mirroring, 90°-step rotation, horizontal offset for the radar arrow), `camera/ResultsOverlay` (debug boxes), `detection/ObjectDetectorHelper` (live stream, CPU delegate, GPU behind a debug constant), `detection/DetectionGate` (3 consecutive frames ≥ 0.5 to lock, 500 ms lost → unlock), `detection/DetectionLogger` (top-3 labels to Logcat), `GhostRadarApp` (rationale screen → permission → P0 debug screen).
+- 19 unit tests: `DetectionGateTest` (8), `CoordinateMapperTest` (11). All green.
+
+**Decisions worth knowing**
+- **tasks-vision pinned to 1.0.0, not 1.1.1.** 1.1.x adds a hard dependency on `litertlm-android` (an on-device LLM runtime, ~22 MB arm64 .so, plus kotlin-reflect) that object detection does not use. 1.0.0 has no such dependency and its native lib is 16 KB page-aligned (checked ELF `p_align = 0x4000` for all four ABIs, and `zipalign -c -P 16` passes on the built APK). Revisit only if a newer line drops the LLM dependency.
+- `tasks-core` transitively pulls `com.google.android.datatransport:*` (Firebase transport client). With no `INTERNET` permission it cannot send anything; mention it truthfully on the Play data-safety form if asked about SDKs.
+- Model-side score threshold is 0.3 so the day-one log shows weak guesses; the gate applies the real 0.5 cut-off.
+- Activity locked to portrait for v1 (lint warns it is ignored on large screens from Android 16; fine for a phone prank).
+- Debug APK is 70 MB because it carries four ABIs. The Play AAB will split per ABI; arm64 is ~11 MB MediaPipe + 4.6 MB model + Compose, so expect low-20s MB installed.
+- Local toolchain note: the machine's default JDK (`/Library/Java/.../jdk-22`) is x86_64 and does not run on this arm64 Mac. Build with `JAVA_HOME=~/Library/Java/JavaVirtualMachines/jdk-21.0.12.1+1/Contents/Home`. Android Studio uses its own JBR, so this only matters for the CLI.
+
+**Tested on device**
+- Nothing yet. No device was attached. `assembleDebug`, `testDebugUnitTest` and `lint` are green on the Mac.
+
+**Day-one doll test — still to do (blocks P0 sign-off and the P3 decision)**
+1. `adb install -r app/build/outputs/apk/debug/app-debug.apk`
+2. `adb logcat -s GhostRadar` in a terminal.
+3. Point the phone at Nila's actual doll, then at a teddy bear, then at a sofa/wall. The on-screen panel and the log show the top-3 labels and scores; the panel says LOCKED when the gate fires.
+4. Record here: the labels the doll produces, their scores, whether the gate locks, and the inference time. If the doll never reads as `teddy bear` ≥ 0.5 for three frames in a row, Phase 3 (Teachable Machine classifier) is needed.
+
+## Open questions for Nila
+
+- Evil face: her own drawing, or the real doll's face photo-cropped and warped?
+- Does the song play once or loop? What happens on screen when it ends?
+- Is there an "off" switch or a parent mode to stop the scare?
+- Radar colour: green, or something else? (Placeholder is `#39FF14`.)
+- Camera rationale copy: current placeholder reads "The camera looks for ghosts hiding in toys. Everything happens on this phone. Nothing is recorded, saved, or sent anywhere." OK, or does she want it spookier?
+- Launcher icon: the current one is a placeholder (green rings + sweep). What does she want?
