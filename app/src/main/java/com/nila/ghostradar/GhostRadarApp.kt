@@ -113,6 +113,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lastFrame by viewModel.lastFrame.collectAsStateWithLifecycle()
+    val snapshot by viewModel.snapshot.collectAsStateWithLifecycle()
     val logger = remember { DetectionLogger() }
     val haptics = remember { ScareHaptics(context) }
     val audio = remember {
@@ -151,13 +152,13 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     ) {
         CameraView(
             useGpu = BuildConfig.DEBUG && USE_GPU_DELEGATE,
-            onFrame = { frame ->
+            onFrame = { frame, image ->
                 logger.log(frame)
-                viewModel.onFrame(frame)
+                viewModel.onFrame(frame, image)
             },
             overlay = { frame ->
                 if (BuildConfig.DEBUG && SHOW_DEBUG_BOXES) frame?.let { ResultsOverlay(it) }
-                ScareOverlay(state = state, config = viewModel.config)
+                ScareOverlay(state = state, snapshot = snapshot, config = viewModel.config)
             },
         )
         if (radarAlpha > 0.01f) {

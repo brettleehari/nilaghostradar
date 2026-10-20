@@ -1,5 +1,6 @@
 package com.nila.ghostradar.scare
 
+import android.graphics.Bitmap
 import android.os.SystemClock
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -35,6 +36,13 @@ class GhostViewModel(
     private var scareTimer: Job? = null
     private var cooldownTimer: Job? = null
 
+    /** Latest upright camera frame; replaced every frame, only read on the main thread. */
+    private var latestImage: Bitmap? = null
+
+    private val _snapshot = MutableStateFlow<Bitmap?>(null)
+    /** The doll cut out of the frame at the moment the scare started. Null outside a scare. */
+    val snapshot: StateFlow<Bitmap?> = _snapshot.asStateFlow()
+
     private var fakeTargetUntilMs = 0L
 
     /**
@@ -47,7 +55,8 @@ class GhostViewModel(
         Log.i("GhostRadar", "debug: fake target injected for $durationMs ms")
     }
 
-    fun onFrame(rawFrame: DetectionFrame) {
+    fun onFrame(rawFrame: DetectionFrame, image: Bitmap? = null) {
+        latestImage = image
         val frame = if (rawFrame.timestampMs < fakeTargetUntilMs) rawFrame.withFakeBear() else rawFrame
         _lastFrame.value = frame
         val out = gate.onFrame(frame.objects, frame.timestampMs)
@@ -65,6 +74,7 @@ class GhostViewModel(
 
     private fun onTransition(before: GhostState, after: GhostState) {
         if (before !is GhostState.Scaring && after is GhostState.Scaring) {
+            _snapshot.value = latestImage?.let { cutOut(it, after.target.box, config.cutoutMarginFraction) }
             scareTimer?.cancel()
             scareTimer = viewModelScope.launch {
                 delay(config.scareDurationMs)
@@ -87,7 +97,19 @@ class GhostViewModel(
     private fun finishCooldown() {
         cooldownTimer?.cancel()
         _state.value = machine.onCooldownFinished()
+        if (_state.value is GhostState.Searching) _snapshot.value = null
     }
+}
+
+/** Crops [box] (plus margin) out of [image], clamped to the image. */
+internal fun cutOut(image: Bitmap, box: Box, margin: Float): Bitmap? {
+    val mx = box.width * margin
+    val my = box.height * margin
+    val left = (box.left - mx).toInt().coerceIn(0, image.width - 1)
+    val top = (box.top - my).toInt().coerceIn(0, image.height - 1)
+    val right = (box.right + mx).toInt().coerceIn(left + 1, image.width)
+    val bottom = (box.bottom + my).toInt().coerceIn(top + 1, image.height)
+    return runCatching { Bitmap.createBitmap(image, left, top, right - left, bottom - top) }.getOrNull()
 }
 
 private fun DetectionFrame.withFakeBear(): DetectionFrame {

@@ -12,6 +12,7 @@ import android.graphics.Matrix
 import android.os.SystemClock
 import android.util.Log
 import androidx.camera.core.ImageProxy
+import com.google.mediapipe.framework.image.BitmapExtractor
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.core.BaseOptions
@@ -36,7 +37,8 @@ class ObjectDetectorHelper(
     private val maxResults: Int = 3,
 ) {
     interface Listener {
-        fun onFrame(frame: DetectionFrame)
+        /** [image] is the upright frame the boxes refer to; valid until the next frame. */
+        fun onFrame(frame: DetectionFrame, image: Bitmap)
         fun onError(message: String)
     }
 
@@ -101,6 +103,7 @@ class ObjectDetectorHelper(
                 imageHeight = input.height,
                 timestampMs = result.timestampMs(),
             ),
+            BitmapExtractor.extract(input),
         )
     }
 

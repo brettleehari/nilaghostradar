@@ -6,6 +6,7 @@
  */
 package com.nila.ghostradar.camera
 
+import android.graphics.Bitmap
 import android.util.Log
 import android.util.Size
 import androidx.camera.core.CameraSelector
@@ -51,7 +52,7 @@ import java.util.concurrent.Executors
  */
 @Composable
 fun CameraView(
-    onFrame: (DetectionFrame) -> Unit,
+    onFrame: (DetectionFrame, Bitmap) -> Unit,
     modifier: Modifier = Modifier,
     useGpu: Boolean = false,
     overlay: @Composable BoxScope.(DetectionFrame?) -> Unit = {},
@@ -72,12 +73,12 @@ fun CameraView(
             context = context.applicationContext,
             useGpu = useGpu,
             listener = object : ObjectDetectorHelper.Listener {
-                override fun onFrame(frame: DetectionFrame) {
+                override fun onFrame(frame: DetectionFrame, image: Bitmap) {
                     mainExecutor.execute {
                         if (!active) return@execute
                         frameSize = FitSize(frame.imageWidth.toFloat(), frame.imageHeight.toFloat())
                         latestFrame = frame
-                        currentOnFrame(frame)
+                        currentOnFrame(frame, image)
                     }
                 }
 

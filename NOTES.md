@@ -111,6 +111,21 @@ Read this before starting any task. Append after finishing: what changed, what w
 - Track: does 10 s feel right, and should the hit at 8.2 s move earlier to match the 2 s lunge?
 - Icon and feature graphic: approve, or brief a redesign.
 
+## 2026-10-20 — First real phone: moto g stylus (2022), Android 12. Scare redesigned.
+
+**Day-one test (partial)**
+- Teddy bear figurine (ceramic, ~15 cm, held in hand): `teddy bear` 0.77–0.99, tight box, lock and scare fire on their own. **Teddy bear path works on a real phone.**
+- Nila's doll: not yet tested.
+- Inference on this phone (Helio G88 class): 150–400 ms per frame on CPU. Lock takes ~1 s. Try the GPU delegate in the tuning session.
+
+**Scare redesign (Hari's call, 2026-10-20; supersedes the "face grows" journey step 4 — Nila to confirm)**
+- At lock the doll is cut out of the live camera frame (box + 12 % margin) and drawn exactly where it is; its face region (centre 50 %/24 %, width 52 % of the cutout) crossfades to the evil face over 250 ms; the whole doll lifts 6 % and lunges 3.2× toward screen centre over 800 ms with jitter, holds 700 ms, fades on Cooldown. Face placement is a heuristic; numbers live in `ScareConfig`.
+- Track replaced: the loud part is now at t=0 (bang + shriek + crash, peak at 16 ms), with a 7 s dread tail. Purpose: a stun, kids drop the phone. MediaPlayer volume pinned to max; device media volume still applies.
+- `DetectionFrame` listener now also delivers the frame bitmap; the view model keeps the latest one and crops on entering Scaring (`snapshot` flow).
+
+**Hardware notes**
+- USB on this phone drops under screencap bursts; keep adb captures sparse.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?

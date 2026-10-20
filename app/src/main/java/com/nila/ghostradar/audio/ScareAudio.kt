@@ -32,6 +32,7 @@ class ScareAudio(
             context.resources.openRawResourceFd(trackRes).use { afd ->
                 mp.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
             }
+            mp.setVolume(1f, 1f)
             mp.setOnPreparedListener { ready = true }
             mp.setOnCompletionListener { onFinished() }
             mp.setOnErrorListener { _, what, extra ->
