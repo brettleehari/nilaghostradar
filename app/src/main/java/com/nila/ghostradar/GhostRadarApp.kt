@@ -4,7 +4,11 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,26 +17,32 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nila.ghostradar.audio.ScareAudio
 import com.nila.ghostradar.camera.CameraView
 import com.nila.ghostradar.camera.ResultsOverlay
 import com.nila.ghostradar.detection.DetectionFrame
 import com.nila.ghostradar.detection.DetectionLogger
+import com.nila.ghostradar.haptics.ScareHaptics
 import com.nila.ghostradar.radar.RadarScreen
 import com.nila.ghostradar.scare.GhostState
 import com.nila.ghostradar.scare.GhostViewModel
+import com.nila.ghostradar.scare.ScareOverlay
 
 /** Root of the app: rationale → permission → hunt. */
 @Composable
@@ -61,15 +71,49 @@ fun GhostRadarApp() {
 }
 
 /**
- * Camera analysing underneath, radar on top. The radar is opaque in v1 ("full-screen first");
- * drop [RADAR_BACKGROUND_ALPHA] to see the preview through it. Debug builds keep the label panel
- * for the day-one doll test.
+ * Camera analysing underneath, the scare overlay on the preview, the radar on top.
+ * The radar is opaque while Searching ("full-screen first") and fades away the moment something
+ * is locked so the doll and the face are visible; it returns when the state is Searching again.
+ * Scaring starts haptics and audio; the view model's timers handle the rest.
+ *
+ * Debug builds: long-press anywhere to inject a fake target and see the whole scare without a doll.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lastFrame by viewModel.lastFrame.collectAsStateWithLifecycle()
     val logger = remember { DetectionLogger() }
+    val haptics = remember { ScareHaptics(context) }
+    val audio = remember {
+        ScareAudio(context, R.raw.scare_track_placeholder, onFinished = viewModel::onAudioFinished)
+    }
+
+    // Preload during the radar phase; release with the screen.
+    DisposableEffect(audio) {
+        audio.preload()
+        onDispose {
+            audio.release()
+            haptics.stop()
+        }
+    }
+
+    // Side effects on state entry.
+    LaunchedEffect(state::class) {
+        when (state) {
+            is GhostState.Scaring -> { haptics.scare(); audio.play() }
+            is GhostState.Cooldown -> haptics.stop()
+            GhostState.Searching -> { haptics.stop(); audio.stop() }
+            is GhostState.Locked -> Unit
+        }
+    }
+
+    val radarAlpha by animateFloatAsState(
+        targetValue = if (state is GhostState.Searching) RADAR_BACKGROUND_ALPHA else 0f,
+        animationSpec = tween(if (state is GhostState.Searching) 600 else 150),
+        label = "radarAlpha",
+    )
 
     Box(
         Modifier
@@ -84,10 +128,25 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
             },
             overlay = { frame ->
                 if (BuildConfig.DEBUG && SHOW_DEBUG_BOXES) frame?.let { ResultsOverlay(it) }
+                ScareOverlay(state = state, config = viewModel.config)
             },
         )
-        RadarScreen(state = state, backgroundAlpha = RADAR_BACKGROUND_ALPHA)
-        if (BuildConfig.DEBUG) DebugPanel(lastFrame, state)
+        if (radarAlpha > 0.01f) {
+            RadarScreen(
+                state = state,
+                backgroundAlpha = 1f,
+                modifier = Modifier.graphicsLayer { alpha = radarAlpha },
+            )
+        }
+        if (BuildConfig.DEBUG) {
+            // Topmost so the gesture is not swallowed by PreviewView's own touch handling.
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .combinedClickable(onClick = {}, onLongClick = { viewModel.injectFakeTarget() }),
+            )
+            DebugPanel(lastFrame, state)
+        }
     }
 }
 
@@ -107,7 +166,7 @@ private fun DebugPanel(frame: DetectionFrame?, state: GhostState) {
         )
         if (frame == null) {
             Text(
-                text = androidx.compose.ui.res.stringResource(R.string.debug_waiting),
+                text = stringResource(R.string.debug_waiting),
                 style = MaterialTheme.typography.labelSmall,
                 color = Color.White,
             )
@@ -128,7 +187,8 @@ private fun DebugPanel(frame: DetectionFrame?, state: GhostState) {
     }
 }
 
-/** Debug flags. CPU delegate and an opaque radar are the v1 defaults. */
+/** Debug flags. CPU delegate is the v1 default. */
 private const val USE_GPU_DELEGATE = false
 private const val SHOW_DEBUG_BOXES = true
+/** Radar opacity while Searching. 1 = full-screen radar, lower = see the camera through it. */
 private const val RADAR_BACKGROUND_ALPHA = 1f
