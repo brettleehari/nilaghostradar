@@ -132,6 +132,12 @@ Read this before starting any task. Append after finishing: what changed, what w
 - `res/raw/radar_ambience.wav`: original worn-music-box loop (21 s, seamless). Hari asked for Annabelle's "I Can See You": copyrighted, so it cannot be bundled. For a private sideload he can overwrite the file locally; never commit it.
 - Verified on the moto g: no MediaPlayer errors, audio tracks active while on the radar.
 
+## 2026-10-20 — Voice line and private media slots
+
+- `audio/VoiceLine`: Android TextToSpeech, pitch 0.5, rate 0.7. On Locked the phone says `ScareConfig.voiceLine` ("Bloody Mary"); the state machine holds Locked (new `holdScare` flag, 2 tests) until the line finishes or `voiceMaxHoldMs` (1.5 s), then Scaring fires with the stinger. If TTS is missing the hold is skipped. Verified on the moto g: binds to Google TTS, no errors.
+- Private overrides: `app/src/release/res/raw/` and `app/src/debug/res/raw/` are gitignored; a file with the same resource name there replaces the committed one for that build type (verified: the release APK picked up the override). See `app/src/PRIVATE_MEDIA.md`. Hari wants Annabelle's cue on Nila's phone; it is his file to place, never ours to fetch or commit.
+- Decision for later: the Play build keeps the music-box loop; Hari will pick generic haunting music for the public version.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?

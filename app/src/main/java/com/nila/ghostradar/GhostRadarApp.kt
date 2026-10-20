@@ -40,6 +40,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nila.ghostradar.audio.AmbientAudio
 import com.nila.ghostradar.audio.ScareAudio
+import com.nila.ghostradar.audio.VoiceLine
 import com.nila.ghostradar.camera.CameraView
 import com.nila.ghostradar.camera.ResultsOverlay
 import com.nila.ghostradar.detection.DetectionFrame
@@ -121,6 +122,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         ScareAudio(context, R.raw.scare_track, onFinished = viewModel::onAudioFinished)
     }
     val ambience = remember { AmbientAudio(context, R.raw.radar_ambience) }
+    val voice = remember { VoiceLine(context) }
 
     // Preload during the radar phase; release with the screen.
     DisposableEffect(audio) {
@@ -129,6 +131,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         onDispose {
             audio.release()
             ambience.release()
+            voice.release()
             haptics.stop()
         }
     }
@@ -137,8 +140,12 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     // lands on silence.
     LaunchedEffect(state::class) {
         when (state) {
-            GhostState.Searching -> { haptics.stop(); audio.stop(); ambience.play() }
-            is GhostState.Locked -> ambience.pause()
+            GhostState.Searching -> { haptics.stop(); audio.stop(); voice.stop(); ambience.play() }
+            is GhostState.Locked -> {
+                ambience.pause()
+                val line = viewModel.config.voiceLine
+                if (line.isBlank()) viewModel.onVoiceLineDone() else voice.speak(line, onDone = viewModel::onVoiceLineDone)
+            }
             is GhostState.Scaring -> { ambience.pause(); haptics.scare(); audio.play() }
             is GhostState.Cooldown -> haptics.stop()
         }

@@ -15,3 +15,7 @@
 
 # release signing, never committed
 /keystore.properties
+
+# private media overrides (never committed): drop radar_ambience.<ext> or scare_track.<ext> here
+/app/src/release/res/raw/
+/app/src/debug/res/raw/

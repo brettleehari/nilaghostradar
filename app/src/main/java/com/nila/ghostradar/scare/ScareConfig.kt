@@ -32,6 +32,10 @@ data class ScareConfig(
     val fadeOutMs: Int = 400,
     /** Cooldown ends when the song ends or after this, whichever is shorter. */
     val cooldownMaxMs: Long = 8_000L,
+    /** Spoken by the phone the moment it locks, before the bang. Empty disables it. */
+    val voiceLine: String = "Bloody Mary",
+    /** The scare waits for the voice line at most this long. */
+    val voiceMaxHoldMs: Long = 1_500L,
 ) {
     /** Total scare timeline before the state machine moves on to Cooldown. */
     val scareDurationMs: Long get() = (floatUpMs + approachMs + holdMs).toLong()

@@ -44,6 +44,12 @@ class GhostViewModel(
     val snapshot: StateFlow<Bitmap?> = _snapshot.asStateFlow()
 
     private var fakeTargetUntilMs = 0L
+    private var voiceHoldUntilMs = 0L
+
+    /** The UI calls this when the voice line has finished (or could not play). */
+    fun onVoiceLineDone() {
+        voiceHoldUntilMs = 0L
+    }
 
     /**
      * Debug/tuning aid: pretend a teddy bear sits in the middle of the frame for [durationMs].
@@ -62,7 +68,8 @@ class GhostViewModel(
         val out = gate.onFrame(frame.objects, frame.timestampMs)
         val target = out.target?.toTarget(frame.imageWidth, frame.imageHeight)
         val before = _state.value
-        val after = machine.onGate(out, target)
+        val hold = SystemClock.uptimeMillis() < voiceHoldUntilMs
+        val after = machine.onGate(out, target, holdScare = hold)
         _state.value = after
         onTransition(before, after)
     }
@@ -73,6 +80,9 @@ class GhostViewModel(
     }
 
     private fun onTransition(before: GhostState, after: GhostState) {
+        if (before !is GhostState.Locked && after is GhostState.Locked) {
+            voiceHoldUntilMs = if (config.voiceLine.isBlank()) 0L else SystemClock.uptimeMillis() + config.voiceMaxHoldMs
+        }
         if (before !is GhostState.Scaring && after is GhostState.Scaring) {
             _snapshot.value = latestImage?.let { cutOut(it, after.target.box, config.cutoutMarginFraction) }
             scareTimer?.cancel()

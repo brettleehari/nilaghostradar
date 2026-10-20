@@ -87,6 +87,22 @@ class GhostStateMachineTest {
     }
 
     @Test
+    fun `hold keeps Locked until released, then scares`() {
+        val m = GhostStateMachine()
+        m.feed(locked(just = true))
+        assertEquals(GhostState.Locked(target), m.onGate(locked().first, target, holdScare = true))
+        assertEquals(GhostState.Locked(other), m.onGate(locked().first, other, holdScare = true))
+        assertEquals(GhostState.Scaring(other), m.onGate(locked().first, other, holdScare = false))
+    }
+
+    @Test
+    fun `hold does not keep a lost lock`() {
+        val m = GhostStateMachine()
+        m.feed(locked(just = true))
+        assertEquals(GhostState.Searching, m.onGate(unlocked.first, null, holdScare = true))
+    }
+
+    @Test
     fun `scare finished is ignored outside scaring`() {
         val m = GhostStateMachine()
         assertEquals(GhostState.Searching, m.onScareFinished())

@@ -6,8 +6,9 @@ import com.nila.ghostradar.detection.DetectionGate
  * Pure reducer for `Searching → Locked → Scaring → Cooldown → Searching`.
  *
  * - Searching: the gate locking moves to Locked.
- * - Locked: the very next frame promotes to Scaring (the scare starts "instantly", no build-up).
- *   Losing the lock before that drops back to Searching without a scare.
+ * - Locked: the very next frame promotes to Scaring (the scare starts "instantly", no build-up),
+ *   unless the caller asks to hold (voice line still playing). Losing the lock before that drops
+ *   back to Searching without a scare.
  * - Scaring: the target keeps updating so the overlay follows the doll. Ends when the scare
  *   timeline finishes or the target is lost, either way into Cooldown.
  * - Cooldown: one scare per lock. Back to Searching only once the cooldown timer has run out
@@ -23,14 +24,21 @@ class GhostStateMachine {
     private var cooldownTimerDone = false
     private var gateLocked = false
 
-    fun onGate(gate: DetectionGate.Output, target: Target?): GhostState {
+    /**
+     * [holdScare] keeps a Locked state from promoting to Scaring (used while the voice line is
+     * still being spoken). The lock itself still follows the gate.
+     */
+    fun onGate(gate: DetectionGate.Output, target: Target?, holdScare: Boolean = false): GhostState {
         gateLocked = gate.locked
         state = when (val s = state) {
             GhostState.Searching ->
                 if (gate.locked && target != null) GhostState.Locked(target) else s
 
-            is GhostState.Locked ->
-                if (gate.locked) GhostState.Scaring(target ?: s.target) else GhostState.Searching
+            is GhostState.Locked -> when {
+                !gate.locked -> GhostState.Searching
+                holdScare -> GhostState.Locked(target ?: s.target)
+                else -> GhostState.Scaring(target ?: s.target)
+            }
 
             is GhostState.Scaring ->
                 if (gate.locked) GhostState.Scaring(target ?: s.target)
