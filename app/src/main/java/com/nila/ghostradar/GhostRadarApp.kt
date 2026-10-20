@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -24,12 +25,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -60,13 +65,37 @@ fun GhostRadarApp() {
         if (!ok) deniedOnce = true
     }
 
-    if (granted) {
-        HuntScreen()
-    } else {
-        CameraRationaleScreen(
-            deniedOnce = deniedOnce,
-            onContinue = { launcher.launch(Manifest.permission.CAMERA) },
-        )
+    var showLicenses by rememberSaveable { mutableStateOf(false) }
+    val licensesLabel = stringResource(R.string.licenses_open)
+    if (showLicenses) {
+        LicensesScreen(onBack = { showLicenses = false })
+        return
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        if (granted) {
+            HuntScreen()
+        } else {
+            CameraRationaleScreen(
+                deniedOnce = deniedOnce,
+                onContinue = { launcher.launch(Manifest.permission.CAMERA) },
+            )
+        }
+        // PLACEHOLDER placement: small ⓘ in the top-right opens the open-source notices.
+        TextButton(
+            onClick = { showLicenses = true },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .safeDrawingPadding()
+                .padding(4.dp)
+                .semantics { contentDescription = licensesLabel },
+        ) {
+            Text(
+                text = "ⓘ",
+                fontSize = 22.sp,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+            )
+        }
     }
 }
 

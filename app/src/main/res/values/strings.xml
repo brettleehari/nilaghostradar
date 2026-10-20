@@ -14,6 +14,10 @@
     <string name="radar_cooldown">…</string>
     <string name="radar_distance_label">PARANORMAL DISTANCE</string>
 
+    <!-- Licences screen -->
+    <string name="licenses_back">‹ Back</string>
+    <string name="licenses_open">Open source licences</string>
+
     <!-- P0 debug overlay -->
     <string name="debug_waiting">Waiting for first frame…</string>
 </resources>
