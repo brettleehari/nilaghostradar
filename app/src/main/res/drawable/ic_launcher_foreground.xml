@@ -1,29 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- PLACEHOLDER launcher icon: green radar rings and a sweep. Replace with Nila's icon before P4. -->
+<!-- Launcher foreground: radar rings, sweep wedge and a small ghost. Same design as store/icon_512.png. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#39FF14"
-        android:strokeWidth="2"
-        android:pathData="M54,54m-36,0a36,36 0 1,1 72,0a36,36 0 1,1 -72,0" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#39FF14"
-        android:strokeWidth="2"
-        android:pathData="M54,54m-24,0a24,24 0 1,1 48,0a24,24 0 1,1 -48,0" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#39FF14"
-        android:strokeWidth="2"
-        android:pathData="M54,54m-12,0a12,12 0 1,1 24,0a12,12 0 1,1 -24,0" />
-    <path
-        android:fillColor="#6639FF14"
-        android:pathData="M54,54 L54,18 A36,36 0 0,1 85.2,36 Z" />
-    <path
-        android:fillColor="#39FF14"
-        android:pathData="M54,54m-4,0a4,4 0 1,1 8,0a4,4 0 1,1 -8,0" />
+    <!-- rings -->
+    <path android:fillColor="#00000000" android:strokeColor="#39FF14" android:strokeWidth="1.6"
+        android:pathData="M54,54m-30,0a30,30 0 1,1 60,0a30,30 0 1,1 -60,0" />
+    <path android:fillColor="#00000000" android:strokeColor="#39FF14" android:strokeWidth="1.6"
+        android:pathData="M54,54m-20,0a20,20 0 1,1 40,0a20,20 0 1,1 -40,0" />
+    <path android:fillColor="#00000000" android:strokeColor="#39FF14" android:strokeWidth="1.6"
+        android:pathData="M54,54m-10,0a10,10 0 1,1 20,0a10,10 0 1,1 -20,0" />
+    <!-- crosshair -->
+    <path android:fillColor="#00000000" android:strokeColor="#7839FF14" android:strokeWidth="0.8"
+        android:pathData="M24,54 L84,54 M54,24 L54,84" />
+    <!-- sweep wedge: from top to ~70 degrees -->
+    <path android:fillColor="#6E39FF14"
+        android:pathData="M54,54 L54,24 A30,30 0 0,1 82.2,43.7 Z" />
+    <path android:fillColor="#00000000" android:strokeColor="#39FF14" android:strokeWidth="1.4"
+        android:pathData="M54,54 L82.2,43.7" />
+    <!-- ghost -->
+    <path android:fillColor="#ECE8E0"
+        android:pathData="M58,63 A8,8 0 0,1 74,63 L74,74 L71,72.4 L68,74 L65,72.4 L62,74 L59,72.4 L58,74 Z" />
+    <path android:fillColor="#000000"
+        android:pathData="M62.2,63.5m-1.7,0a1.7,2 0 1,1 3.4,0a1.7,2 0 1,1 -3.4,0" />
+    <path android:fillColor="#000000"
+        android:pathData="M68.8,63.5m-1.7,0a1.7,2 0 1,1 3.4,0a1.7,2 0 1,1 -3.4,0" />
+    <path android:fillColor="#000000"
+        android:pathData="M65.5,68.2m-1.2,0a1.2,1 0 1,1 2.4,0a1.2,1 0 1,1 -2.4,0" />
 </vector>
