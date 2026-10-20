@@ -26,7 +26,7 @@ export JAVA_HOME=~/Library/Java/JavaVirtualMachines/jdk-21.0.12.1+1/Contents/Hom
 - Title: Nila Deha's Ghost Radar
 - Short description: Point your phone at a toy. Something is hiding inside it.
 - Full description: A Halloween prank for the living room. The radar sweeps, the arrow swings, and when the camera finds a doll or a teddy bear the phone shakes, the music starts and the toy's face is not the toy's face any more. Everything happens on your phone: no account, no internet, no ads, nothing recorded.
-- Graphics still needed from Nila: icon (512×512), feature graphic (1024×500), at least 2 phone screenshots (the radar and the scare).
+- Graphics: v1 icon at `store/icon_512.png`, feature graphic at `store/feature_graphic_1024x500.png` (Nila to approve or redo). Still needed: at least 2 phone screenshots (the radar and the scare), taken on a real phone.
 
 ## Data safety form
 
@@ -45,8 +45,7 @@ Answer truthfully: the app contains fear/horror themes (jump scare, creepy face,
 ## Pre-launch checklist
 
 - [ ] Final applicationId chosen and set.
-- [ ] Nila's evil face replaces `evil_face_placeholder.png`; placeholder track replaced by a licensed/owned song; both recorded in `ASSETS.md`.
-- [ ] Nila's icon replaces the placeholder launcher icon.
+- [ ] Nila signs off (or replaces) the v1 face, track, icon and feature graphic listed in `ASSETS.md`.
 - [ ] Day-one doll test passed on a real phone (or P3 classifier shipped).
 - [ ] `versionCode` bumped.
 - [ ] AAB uploaded to **Internal testing**, mapping file attached.

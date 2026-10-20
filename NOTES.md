@@ -96,6 +96,21 @@ Read this before starting any task. Append after finishing: what changed, what w
 - Placeholder face, track and icon must be replaced before anything beyond the internal track.
 - Day-one doll test on a real phone.
 
+## 2026-10-20 — P2: v1 assets replace the placeholders
+
+**What changed**
+- No assets had arrived from Nila, so project-owned v1 assets were produced and the placeholders deleted: `evil_face.png` (1024 px cracked porcelain doll with hollow eyes, black tear streaks, needle grin, blush, cracks), `scare_track.wav` (10 s: sub drone, dissonant string cluster, whispered noise bursts, accelerating heartbeat, broken music-box notes, reverse swell into a hit at 8.2 s), a launcher icon (radar + ghost) and Play store graphics in `store/`.
+- All of it is generated from scratch, nothing sampled or copied, so it is shippable. It is still **Nila's call**: every item is listed in ASSETS.md as "awaiting sign-off or replacement".
+- The scare visuals end at ~2.1 s; the track runs 10 s so the cooldown is capped by the 8 s rule, not the song.
+
+**Still P2**
+- The on-device tuning session with Nila (`ScareConfig` numbers) needs a phone and her presence.
+
+**New questions for Nila**
+- Face: keep the porcelain-doll direction, or draw her own? If her own, deliver a transparent PNG at least 1024 px square with the face centred.
+- Track: does 10 s feel right, and should the hit at 8.2 s move earlier to match the 2 s lunge?
+- Icon and feature graphic: approve, or brief a redesign.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?
