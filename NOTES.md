@@ -29,6 +29,25 @@ Read this before starting any task. Append after finishing: what changed, what w
 3. Point the phone at Nila's actual doll, then at a teddy bear, then at a sofa/wall. The on-screen panel and the log show the top-3 labels and scores; the panel says LOCKED when the gate fires.
 4. Record here: the labels the doll produces, their scores, whether the gate locks, and the inference time. If the doll never reads as `teddy bear` ≥ 0.5 for three frames in a row, Phase 3 (Teachable Machine classifier) is needed.
 
+## 2026-10-20 — P1 part 1: state machine + radar screen
+
+**What changed**
+- `scare/GhostState`, `scare/GhostStateMachine` (pure reducer, 10 tests), `scare/GhostViewModel` (gate + reducer + scare/cooldown timers, `onAudioFinished()` hook for "song end or 8 s"), `scare/ScareConfig` (all brief defaults in one object).
+- `radar/SweepCanvas` (three glowing rings, crosshair, rotating sweep-gradient wedge, seven random blips that light up as the sweep passes and fade, pulsing echo for the real target), `radar/DirectionArrow` (spring-animated arrow; wanders ±45° while Searching, points at the target's horizontal offset × 55° when locked), `radar/RadarScreen` (status line, dish with the arrow in the centre, fake distance readout: random walk 3–9.5 m while Searching, derived from box height when locked).
+- `HuntScreen` stacks the radar (opaque, "full-screen first") over the still-running `CameraView`. Debug builds keep the label panel and detection boxes. Constants at the bottom of `GhostRadarApp.kt` flip GPU delegate, debug boxes, and radar opacity.
+- Reducer rules: Locked promotes to Scaring on the very next frame (no build-up). Scaring → Cooldown on scare timeout or target lost. Cooldown → Searching only after the timer AND the gate has released, so a doll left in frame scares once.
+
+**Tested on device**
+- Still nothing on a device. 34 unit tests and lint green.
+
+**Still to do in P1**
+- `haptics/ScareHaptics`, `audio/ScareAudio` (preload during radar, play on Scaring, call `onAudioFinished`), `scare/ScareOverlay` with the placeholder face and the `ScareConfig` timeline, and the semi-transparent radar over the preview.
+
+**New questions for Nila**
+- Status copy is placeholder: "SEARCHING…", "SIGNAL LOCKED", "IT SEES YOU", "PARANORMAL DISTANCE". Her words?
+- Arrow sits in the middle of the dish. OK, or above it like Find My?
+- Sweep speed is one turn per 2 s. Faster, slower?
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?
