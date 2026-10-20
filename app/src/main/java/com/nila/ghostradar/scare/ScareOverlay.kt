@@ -98,7 +98,7 @@ fun ScareOverlay(
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f * faceAlpha.value * (0.4f + 0.6f * a))))
 
         Image(
-            painter = painterResource(R.drawable.evil_face_placeholder),
+            painter = painterResource(R.drawable.evil_face),
             contentDescription = null,
             contentScale = ContentScale.Fit,
             modifier = Modifier

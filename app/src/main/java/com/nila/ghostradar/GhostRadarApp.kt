@@ -116,7 +116,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     val logger = remember { DetectionLogger() }
     val haptics = remember { ScareHaptics(context) }
     val audio = remember {
-        ScareAudio(context, R.raw.scare_track_placeholder, onFinished = viewModel::onAudioFinished)
+        ScareAudio(context, R.raw.scare_track, onFinished = viewModel::onAudioFinished)
     }
 
     // Preload during the radar phase; release with the screen.
