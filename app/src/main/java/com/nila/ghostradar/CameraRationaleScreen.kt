@@ -46,6 +46,7 @@ fun CameraRationaleScreen(
         Text(
             text = stringResource(R.string.rationale_body),
             style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Center,
         )
         if (deniedOnce) {
@@ -53,6 +54,7 @@ fun CameraRationaleScreen(
             Text(
                 text = stringResource(R.string.rationale_denied),
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center,
             )
         }

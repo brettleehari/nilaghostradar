@@ -106,7 +106,11 @@ private fun DebugPanel(frame: DetectionFrame?, state: GhostState) {
             color = if (state is GhostState.Searching) Color.White else MaterialTheme.colorScheme.primary,
         )
         if (frame == null) {
-            Text(androidx.compose.ui.res.stringResource(R.string.debug_waiting), style = MaterialTheme.typography.labelSmall)
+            Text(
+                text = androidx.compose.ui.res.stringResource(R.string.debug_waiting),
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White,
+            )
         } else {
             Text(
                 text = "${frame.inferenceTimeMs} ms  ${frame.imageWidth}x${frame.imageHeight}",

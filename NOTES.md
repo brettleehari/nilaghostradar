@@ -37,8 +37,10 @@ Read this before starting any task. Append after finishing: what changed, what w
 - `HuntScreen` stacks the radar (opaque, "full-screen first") over the still-running `CameraView`. Debug builds keep the label panel and detection boxes. Constants at the bottom of `GhostRadarApp.kt` flip GPU delegate, debug boxes, and radar opacity.
 - Reducer rules: Locked promotes to Scaring on the very next frame (no build-up). Scaring → Cooldown on scare timeout or target lost. Cooldown → Searching only after the timer AND the gate has released, so a doll left in frame scares once.
 
-**Tested on device**
-- Still nothing on a device. 34 unit tests and lint green.
+**Tested on the emulator (arivu_4gb, API 36 arm64, emulated back camera)**
+- Rationale screen → grant → hunt screen all work. Camera binds, the detector loads, inference 15–19 ms per 480×640 frame on the emulated CPU. Radar renders as designed: rings, sweep, fading blips, wandering arrow, blinking status, drifting distance. Debug panel shows the emulator's fake scene as "tv 0.32".
+- Found and fixed: rationale body text was black on black (Text outside a Surface defaults to black content colour). Colours are now explicit.
+- Not exercised: Locked/Scaring/Cooldown, because the emulator scene has no teddy bear. Still needs a real phone and the doll.
 
 **Still to do in P1**
 - `haptics/ScareHaptics`, `audio/ScareAudio` (preload during radar, play on Scaring, call `onAudioFinished`), `scare/ScareOverlay` with the placeholder face and the `ScareConfig` timeline, and the semi-transparent radar over the preview.
