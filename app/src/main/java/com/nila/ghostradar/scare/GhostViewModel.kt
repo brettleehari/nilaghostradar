@@ -23,9 +23,14 @@ import kotlinx.coroutines.launch
 class GhostViewModel(
     private val gate: DetectionGate = DetectionGate(),
     val config: ScareConfig = ScareConfig(),
+    private val policy: HauntPolicy = HauntPolicy(),
 ) : ViewModel() {
 
-    private val machine = GhostStateMachine()
+    private val machine = GhostStateMachine(decideHaunted = { policy.decide(SystemClock.uptimeMillis()) })
+
+    init {
+        policy.startSession(SystemClock.uptimeMillis())
+    }
     private val _state = MutableStateFlow<GhostState>(GhostState.Searching)
     val state: StateFlow<GhostState> = _state.asStateFlow()
 
@@ -56,6 +61,7 @@ class GhostViewModel(
      * Lets Hari and Nila see the whole scare without the doll.
      */
     fun injectFakeTarget(durationMs: Long = 3_000L) {
+        policy.forceNextHaunt()
         // Frame timestamps are uptimeMillis, so the deadline can be too.
         fakeTargetUntilMs = SystemClock.uptimeMillis() + durationMs
         Log.i("GhostRadar", "debug: fake target injected for $durationMs ms")
@@ -81,7 +87,8 @@ class GhostViewModel(
 
     private fun onTransition(before: GhostState, after: GhostState) {
         if (before !is GhostState.Locked && after is GhostState.Locked) {
-            voiceHoldUntilMs = if (config.voiceLine.isBlank()) 0L else SystemClock.uptimeMillis() + config.voiceMaxHoldMs
+            voiceHoldUntilMs = if (!after.haunted || config.voiceLine.isBlank()) 0L
+            else SystemClock.uptimeMillis() + config.voiceMaxHoldMs
         }
         if (before !is GhostState.Scaring && after is GhostState.Scaring) {
             _snapshot.value = latestImage?.let { cutOut(it, after.target.box, config.cutoutMarginFraction) }

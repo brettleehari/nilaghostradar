@@ -16,7 +16,10 @@ import com.nila.ghostradar.detection.DetectionGate
  *
  * Timers live in [GhostViewModel]; this class only receives their expiry.
  */
-class GhostStateMachine {
+class GhostStateMachine(
+    /** Asked once per new lock. False makes that lock a faint trace that never scares. */
+    private val decideHaunted: () -> Boolean = { true },
+) {
 
     var state: GhostState = GhostState.Searching
         private set
@@ -32,11 +35,11 @@ class GhostStateMachine {
         gateLocked = gate.locked
         state = when (val s = state) {
             GhostState.Searching ->
-                if (gate.locked && target != null) GhostState.Locked(target) else s
+                if (gate.locked && target != null) GhostState.Locked(target, haunted = decideHaunted()) else s
 
             is GhostState.Locked -> when {
                 !gate.locked -> GhostState.Searching
-                holdScare -> GhostState.Locked(target ?: s.target)
+                !s.haunted || holdScare -> s.copy(target = target ?: s.target)
                 else -> GhostState.Scaring(target ?: s.target)
             }
 

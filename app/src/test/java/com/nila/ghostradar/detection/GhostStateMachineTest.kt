@@ -103,6 +103,25 @@ class GhostStateMachineTest {
     }
 
     @Test
+    fun `an unhaunted lock never scares and ends on release`() {
+        val m = GhostStateMachine(decideHaunted = { false })
+        assertEquals(GhostState.Locked(target, haunted = false), m.feed(locked(just = true)))
+        repeat(50) { assertEquals(GhostState.Locked(target, haunted = false), m.feed(locked())) }
+        assertEquals(GhostState.Searching, m.feed(unlocked))
+    }
+
+    @Test
+    fun `haunted decision is asked once per lock`() {
+        var calls = 0
+        val m = GhostStateMachine(decideHaunted = { calls++; true })
+        m.feed(locked(just = true)); m.feed(locked()); m.feed(locked())
+        assertEquals(1, calls)
+        m.onScareFinished(); m.onCooldownFinished(); m.feed(unlocked)
+        m.feed(locked(just = true))
+        assertEquals(2, calls)
+    }
+
+    @Test
     fun `scare finished is ignored outside scaring`() {
         val m = GhostStateMachine()
         assertEquals(GhostState.Searching, m.onScareFinished())

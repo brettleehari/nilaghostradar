@@ -138,6 +138,16 @@ Read this before starting any task. Append after finishing: what changed, what w
 - Private overrides: `app/src/release/res/raw/` and `app/src/debug/res/raw/` are gitignored; a file with the same resource name there replaces the committed one for that build type (verified: the release APK picked up the override). See `app/src/PRIVATE_MEDIA.md`. Hari wants Annabelle's cue on Nila's phone; it is his file to place, never ours to fetch or commit.
 - Decision for later: the Play build keeps the music-box loop; Hari will pick generic haunting music for the public version.
 
+## 2026-10-21 — Doll test result, and rarity
+
+**Day-one test: passed.** Over 2 466 logged frames with Hari showing the doll and the bear figurine, `teddy bear` reached 0.88 (260 frames) and the scare fired on both. The stock COCO model covers Nila's doll. **Phase 3 (custom classifier) is not needed.** Other labels seen around the room: person 0.86, bed, suitcase, dining table, cell phone, chair, cat 0.75 (a plush?), cup. Trigger list stays `teddy bear` only.
+
+**Rarity (Hari's call, 2026-10-21): "it's rarity that creates the prank".**
+- `scare/HauntPolicy` (pure, 7 tests): per lock, haunted or a faint trace. Defaults: no scare in the first 15 s of a session, at least 45 s between scares, then 30 % chance per lock, guaranteed on the 4th consecutive skipped lock, no per-session cap. All in `HauntPolicy.Config`; tune with Hari and Nila.
+- `GhostState.Locked` gained `haunted`. An unhaunted lock stays Locked (radar stays up, status says "FAINT TRACE…", echo and arrow still react) until the toy leaves the frame; it never scares, never speaks, never pauses the music.
+- The debug long-press forces the next lock to be haunted so demos still work.
+- Machine asks the policy once per new lock (test).
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?

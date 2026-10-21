@@ -10,6 +10,7 @@
     <!-- Radar screen. PLACEHOLDER copy until Nila signs it off. -->
     <string name="radar_searching">SEARCHING…</string>
     <string name="radar_locked">SIGNAL LOCKED</string>
+    <string name="radar_trace">FAINT TRACE…</string>
     <string name="radar_scaring">IT SEES YOU</string>
     <string name="radar_cooldown">…</string>
     <string name="radar_distance_label">PARANORMAL DISTANCE</string>

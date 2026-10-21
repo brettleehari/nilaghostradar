@@ -114,7 +114,9 @@ private fun StatusLine(state: GhostState) {
     // PLACEHOLDER copy; Nila decides the words (open question in NOTES.md).
     val (text, alpha) = when (state) {
         GhostState.Searching -> stringResource(R.string.radar_searching) to blink
-        is GhostState.Locked -> stringResource(R.string.radar_locked) to 1f
+        is GhostState.Locked ->
+            if (state.haunted) stringResource(R.string.radar_locked) to 1f
+            else stringResource(R.string.radar_trace) to 0.85f
         is GhostState.Scaring -> stringResource(R.string.radar_scaring) to 1f
         is GhostState.Cooldown -> stringResource(R.string.radar_cooldown) to 0.6f
     }

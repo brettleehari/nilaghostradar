@@ -142,18 +142,24 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         when (state) {
             GhostState.Searching -> { haptics.stop(); audio.stop(); voice.stop(); ambience.play() }
             is GhostState.Locked -> {
-                ambience.pause()
+                val s = state as GhostState.Locked
                 val line = viewModel.config.voiceLine
-                if (line.isBlank()) viewModel.onVoiceLineDone() else voice.speak(line, onDone = viewModel::onVoiceLineDone)
+                if (s.haunted && line.isNotBlank()) {
+                    ambience.pause()
+                    voice.speak(line, onDone = viewModel::onVoiceLineDone)
+                } else {
+                    viewModel.onVoiceLineDone()
+                }
             }
             is GhostState.Scaring -> { ambience.pause(); haptics.scare(); audio.play() }
             is GhostState.Cooldown -> haptics.stop()
         }
     }
 
+    val showRadar = state is GhostState.Searching || (state is GhostState.Locked && !(state as GhostState.Locked).haunted)
     val radarAlpha by animateFloatAsState(
-        targetValue = if (state is GhostState.Searching) RADAR_BACKGROUND_ALPHA else 0f,
-        animationSpec = tween(if (state is GhostState.Searching) 600 else 150),
+        targetValue = if (showRadar) RADAR_BACKGROUND_ALPHA else 0f,
+        animationSpec = tween(if (showRadar) 600 else 150),
         label = "radarAlpha",
     )
 

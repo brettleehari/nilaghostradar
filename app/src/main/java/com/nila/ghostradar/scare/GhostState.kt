@@ -20,7 +20,8 @@ data class Target(
 /** The one state the whole app renders from. */
 sealed interface GhostState {
     data object Searching : GhostState
-    data class Locked(val target: Target) : GhostState
+    /** [haunted] false = a faint trace: the radar reacts but this lock will never scare. */
+    data class Locked(val target: Target, val haunted: Boolean = true) : GhostState
     data class Scaring(val target: Target) : GhostState
     data class Cooldown(val target: Target?) : GhostState
 
