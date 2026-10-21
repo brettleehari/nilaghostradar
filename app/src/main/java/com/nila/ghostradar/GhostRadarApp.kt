@@ -36,6 +36,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nila.ghostradar.audio.AmbientAudio
@@ -135,6 +137,10 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
             haptics.stop()
         }
     }
+
+    // A session is one hunt; a long time away (home, screen off) starts a fresh one.
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.onHuntPaused() }
+    LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.onHuntResumed() }
 
     // Side effects on state entry. The ambience stops the moment a lock happens so the stinger
     // lands on silence.

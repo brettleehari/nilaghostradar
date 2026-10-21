@@ -14,6 +14,10 @@ import kotlin.random.Random
  *    haunted for sure, so a patient kid always gets one;
  *  - at most [Config.maxPerSession] scares per session (0 = unlimited).
  *
+ * A session is one hunt: it starts when the hunt screen opens and restarts when the app comes back
+ * after being away (home button, screen off, another app) for [Config.sessionResetAfterMs] or more.
+ * A short interruption keeps the session, so a phone call does not hand out a free warm-up.
+ *
  * Pure Kotlin; the clock and the dice are injected so it is unit-tested.
  */
 class HauntPolicy(
@@ -26,6 +30,7 @@ class HauntPolicy(
         val chance: Float = 0.3f,
         val guaranteeAfterSkips: Int = 3,
         val maxPerSession: Int = 0,
+        val sessionResetAfterMs: Long = 60_000L,
     )
 
     private var sessionStartMs = Long.MIN_VALUE
@@ -33,6 +38,7 @@ class HauntPolicy(
     private var skippedInARow = 0
     private var scares = 0
     private var forceNext = false
+    private var pausedAtMs = Long.MIN_VALUE
 
     /** Call once when the hunt screen opens. */
     fun startSession(nowMs: Long) {
@@ -41,6 +47,24 @@ class HauntPolicy(
         skippedInARow = 0
         scares = 0
         forceNext = false
+        pausedAtMs = Long.MIN_VALUE
+    }
+
+    /** The hunt screen went away (app backgrounded, screen off). */
+    fun onPaused(nowMs: Long) {
+        pausedAtMs = nowMs
+    }
+
+    /**
+     * The hunt screen is back. Away for [Config.sessionResetAfterMs] or longer starts a new session;
+     * shorter keeps everything. Returns true when the session restarted.
+     */
+    fun onResumed(nowMs: Long): Boolean {
+        val away = if (pausedAtMs == Long.MIN_VALUE) 0L else nowMs - pausedAtMs
+        pausedAtMs = Long.MIN_VALUE
+        if (away < config.sessionResetAfterMs) return false
+        startSession(nowMs)
+        return true
     }
 
     /** Debug/tuning: the next lock is haunted no matter what. */

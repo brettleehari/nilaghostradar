@@ -51,6 +51,18 @@ class GhostViewModel(
     private var fakeTargetUntilMs = 0L
     private var voiceHoldUntilMs = 0L
 
+    /** Hunt screen left the foreground (home, screen off, another app). */
+    fun onHuntPaused() {
+        policy.onPaused(SystemClock.uptimeMillis())
+    }
+
+    /** Hunt screen is back. A long absence starts a fresh session (see [HauntPolicy]). */
+    fun onHuntResumed() {
+        if (policy.onResumed(SystemClock.uptimeMillis())) {
+            Log.i("GhostRadar", "session restarted after a long absence")
+        }
+    }
+
     /** The UI calls this when the voice line has finished (or could not play). */
     fun onVoiceLineDone() {
         voiceHoldUntilMs = 0L

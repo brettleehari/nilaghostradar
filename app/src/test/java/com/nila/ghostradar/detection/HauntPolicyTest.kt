@@ -69,4 +69,22 @@ class HauntPolicyTest {
         p.startSession(100); assertTrue(p.decide(101))
         assertEquals(false, p.decide(102))
     }
+
+    @Test
+    fun `short absence keeps the session, long absence restarts it`() {
+        val p = HauntPolicy(HauntPolicy.Config(warmUpMs = 10_000, minGapMs = 0, chance = 1f, sessionResetAfterMs = 60_000), always)
+        p.startSession(0)
+        p.onPaused(20_000); assertFalse(p.onResumed(50_000))
+        assertTrue(p.decide(50_001))                      // warm-up long over, still the same session
+        p.onPaused(60_000); assertTrue(p.onResumed(120_000))
+        assertFalse(p.decide(125_000))                    // fresh warm-up
+        assertTrue(p.decide(130_000))
+    }
+
+    @Test
+    fun `resume without a pause is a no-op`() {
+        val p = HauntPolicy(HauntPolicy.Config(warmUpMs = 0, chance = 1f), always)
+        p.startSession(0)
+        assertFalse(p.onResumed(1_000_000))
+    }
 }
