@@ -36,6 +36,8 @@ data class ScareConfig(
     val voiceLine: String = "Bloody Mary",
     /** The scare waits for the voice line at most this long. */
     val voiceMaxHoldMs: Long = 1_500L,
+    /** How long a radar notice ("FAINT TRACE", "CHAIR · NO SOUL") stays on screen. */
+    val noticeMs: Long = 2_500L,
 ) {
     /** Total scare timeline before the state machine moves on to Cooldown. */
     val scareDurationMs: Long get() = (floatUpMs + approachMs + holdMs).toLong()

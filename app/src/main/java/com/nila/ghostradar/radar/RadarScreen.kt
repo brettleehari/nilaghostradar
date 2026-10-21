@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nila.ghostradar.R
 import com.nila.ghostradar.scare.GhostState
+import com.nila.ghostradar.scare.Notice
 import com.nila.ghostradar.scare.Target
 import com.nila.ghostradar.ui.theme.RadarGreen
 import kotlinx.coroutines.delay
@@ -51,6 +52,7 @@ import kotlin.random.Random
 fun RadarScreen(
     state: GhostState,
     modifier: Modifier = Modifier,
+    notice: Notice? = null,
     backgroundAlpha: Float = 1f,
 ) {
     val target = state.targetOrNull
@@ -80,6 +82,8 @@ fun RadarScreen(
         }
         Spacer(Modifier.height(24.dp))
         DistanceReadout(target)
+        Spacer(Modifier.height(20.dp))
+        RadarNotice(notice)
     }
 }
 
@@ -114,9 +118,10 @@ private fun StatusLine(state: GhostState) {
     // PLACEHOLDER copy; Nila decides the words (open question in NOTES.md).
     val (text, alpha) = when (state) {
         GhostState.Searching -> stringResource(R.string.radar_searching) to blink
+        // A faint trace keeps the status line searching; the notice slot below tells the story.
         is GhostState.Locked ->
             if (state.haunted) stringResource(R.string.radar_locked) to 1f
-            else stringResource(R.string.radar_trace) to 0.85f
+            else stringResource(R.string.radar_searching) to blink
         is GhostState.Scaring -> stringResource(R.string.radar_scaring) to 1f
         is GhostState.Cooldown -> stringResource(R.string.radar_cooldown) to 0.6f
     }

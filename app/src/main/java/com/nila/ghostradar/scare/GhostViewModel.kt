@@ -9,6 +9,7 @@ import com.nila.ghostradar.detection.Box
 import com.nila.ghostradar.detection.DetectedObject
 import com.nila.ghostradar.detection.DetectionFrame
 import com.nila.ghostradar.detection.DetectionGate
+import com.nila.ghostradar.detection.SoulScanner
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,7 @@ class GhostViewModel(
     private val gate: DetectionGate = DetectionGate(),
     val config: ScareConfig = ScareConfig(),
     private val policy: HauntPolicy = HauntPolicy(),
+    private val scanner: SoulScanner = SoulScanner(),
 ) : ViewModel() {
 
     private val machine = GhostStateMachine(decideHaunted = { policy.decide(SystemClock.uptimeMillis()) })
@@ -48,6 +50,12 @@ class GhostViewModel(
     /** The doll cut out of the frame at the moment the scare started. Null outside a scare. */
     val snapshot: StateFlow<Bitmap?> = _snapshot.asStateFlow()
 
+    private val _notice = MutableStateFlow<Notice?>(null)
+    /** The small line on the radar ("FAINT TRACE", "CHAIR · NO SOUL"); null when there is none. */
+    val notice: StateFlow<Notice?> = _notice.asStateFlow()
+    private var noticeTimer: Job? = null
+    private var noticeCount = 0L
+
     private var fakeTargetUntilMs = 0L
     private var voiceHoldUntilMs = 0L
 
@@ -59,6 +67,7 @@ class GhostViewModel(
     /** Hunt screen is back. A long absence starts a fresh session (see [HauntPolicy]). */
     fun onHuntResumed() {
         if (policy.onResumed(SystemClock.uptimeMillis())) {
+            scanner.reset()
             Log.i("GhostRadar", "session restarted after a long absence")
         }
     }
@@ -90,6 +99,19 @@ class GhostViewModel(
         val after = machine.onGate(out, target, holdScare = hold)
         _state.value = after
         onTransition(before, after)
+        if (after is GhostState.Searching) {
+            scanner.scan(frame.objects, frame.timestampMs)?.let { show(Notice.NoSoul(it, ++noticeCount)) }
+        }
+    }
+
+    private fun show(n: Notice) {
+        Log.i("GhostRadar", "notice: $n")
+        _notice.value = n
+        noticeTimer?.cancel()
+        noticeTimer = viewModelScope.launch {
+            delay(config.noticeMs)
+            if (_notice.value?.id == n.id) _notice.value = null
+        }
     }
 
     /** Call when the song ends so the cooldown is "song end or 8 s, whichever is shorter". */
@@ -101,6 +123,7 @@ class GhostViewModel(
         if (before !is GhostState.Locked && after is GhostState.Locked) {
             voiceHoldUntilMs = if (!after.haunted || config.voiceLine.isBlank()) 0L
             else SystemClock.uptimeMillis() + config.voiceMaxHoldMs
+            if (!after.haunted) show(Notice.FaintTrace(++noticeCount))
         }
         if (before !is GhostState.Scaring && after is GhostState.Scaring) {
             _snapshot.value = latestImage?.let { cutOut(it, after.target.box, config.cutoutMarginFraction) }

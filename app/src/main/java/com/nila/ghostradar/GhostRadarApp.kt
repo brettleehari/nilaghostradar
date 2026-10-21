@@ -118,6 +118,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val lastFrame by viewModel.lastFrame.collectAsStateWithLifecycle()
     val snapshot by viewModel.snapshot.collectAsStateWithLifecycle()
+    val notice by viewModel.notice.collectAsStateWithLifecycle()
     val logger = remember { DetectionLogger() }
     val haptics = remember { ScareHaptics(context) }
     val audio = remember {
@@ -188,6 +189,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         if (radarAlpha > 0.01f) {
             RadarScreen(
                 state = state,
+                notice = notice,
                 backgroundAlpha = 1f,
                 modifier = Modifier.graphicsLayer { alpha = radarAlpha },
             )

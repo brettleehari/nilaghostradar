@@ -148,6 +148,21 @@ Read this before starting any task. Append after finishing: what changed, what w
 - The debug long-press forces the next lock to be haunted so demos still work.
 - Machine asks the policy once per new lock (test).
 
+## 2026-10-21 — Session defined, notices, "no soul" readouts
+
+**Session (Hari asked for a plain definition).** One hunt = the hunt screen is open. It starts when the screen appears and restarts when the app comes back after being away (home, screen off, another app) for 60 s or more (`HauntPolicy.Config.sessionResetAfterMs`); a shorter absence keeps the warm-up, gap and skip counters, so a phone call does not hand out a free warm-up. `HauntPolicy.onPaused/onResumed` (2 tests), driven by `ON_STOP`/`ON_START` in `HuntScreen`. Plain-words version in README "How a hunt works".
+
+**Faint trace is now a notice, not the status line.** The status line keeps blinking SEARCHING… on an unhaunted lock; a small pill under the readout says `FAINT TRACE · NO ANSWER` for 2.5 s (`ScareConfig.noticeMs`) and slides away. Echo and arrow still track the toy. `scare/Notice`, `radar/RadarNotice`, `GhostViewModel.notice`.
+
+**"No soul" readouts (Hari: "make use of the detection pipeline").** While Searching, everyday objects the detector recognises get the same pill: `BED · NO SOUL`, `CHAIR · NO SOUL`. `detection/SoulScanner` (pure, 5 tests): score ≥ 0.55, never a trigger label, at most one readout every 4 s, the same label not within 20 s. `person` is skipped by default (see question below). Verified on the moto g: `BED · NO SOUL` appeared within 3 s of opening the app.
+
+**Tests:** 52 pass. Lint unchanged (8 informational warnings).
+
+**New questions for Nila**
+- Notice copy and look: `FAINT TRACE · NO ANSWER` and `<THING> · NO SOUL` in a thin green pill. Keep, reword, or move?
+- Should people get a readout too (`PERSON · NO SOUL`)? Off for now; one line in `SoulScanner.Config.skipLabels` turns it on.
+- Is 2.5 s on screen right for a notice?
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?
