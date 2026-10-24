@@ -204,6 +204,12 @@ Now, the third beat of the scare:
 
 **Changes Nila's approved journey (step 5):** she signed off "overlay disappears, doll is normal" on the camera. She needs to see this version and say yes or no. SIGNAL LOST / GONE are placeholder words.
 
+## 2026-10-24 — Three radar loops at random
+
+- `AmbientAudio` now preloads a list and picks one at random each time the hunt starts or resumes after a scare, never the same twice running. Tempo and volume follow whichever is playing.
+- `radar_ambience_2.wav` (slower E-minor lullaby, lower bells, more hiss) and `radar_ambience_3.wav` (sparse high celesta over a tritone drone) from the same in-repo generator. Original melodies; listed in ASSETS.md.
+- Private override slots: Hari's own files need the same three names now, or the generated ones fill the gaps.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?

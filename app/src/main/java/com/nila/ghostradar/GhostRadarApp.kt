@@ -128,7 +128,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     val audio = remember {
         ScareAudio(context, SCARE_TRACKS, onFinished = viewModel::onAudioFinished)
     }
-    val ambience = remember { AmbientAudio(context, R.raw.radar_ambience) }
+    val ambience = remember { AmbientAudio(context, AMBIENCE_LOOPS) }
     val voice = remember { VoiceLine(context) }
 
     // Preload during the radar phase; release with the screen.
@@ -303,6 +303,9 @@ private fun DebugPanel(frame: DetectionFrame?, state: GhostState) {
         }
     }
 }
+
+/** Radar loops; one is picked at random each time the hunt starts or resumes after a scare. */
+private val AMBIENCE_LOOPS = listOf(R.raw.radar_ambience, R.raw.radar_ambience_2, R.raw.radar_ambience_3)
 
 /** Stingers; one is picked at random per scare. Same names in the private override slots replace them. */
 private val SCARE_TRACKS = listOf(R.raw.scare_track, R.raw.scare_track_2, R.raw.scare_track_3)
