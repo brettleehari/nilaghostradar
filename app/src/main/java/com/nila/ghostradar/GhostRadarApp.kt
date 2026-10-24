@@ -155,6 +155,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
                 val line = viewModel.config.voiceLine
                 if (s.haunted && line.isNotBlank()) {
                     ambience.pause()
+                    if (viewModel.proximity.joltAtLock) haptics.jolt()
                     voice.speak(line, onDone = viewModel::onVoiceLineDone)
                 } else {
                     viewModel.onVoiceLineDone()
@@ -165,8 +166,9 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         }
     }
 
-    // Warmer/colder: music speeds up and swells, and the phone ticks faster, as a toy gets closer.
-    // Ticks only while hunting; the scare owns the motor once it starts.
+    // Warmer/colder: music speeds up and swells, and the phone ticks faster, as a toy gets closer;
+    // once HOT the ticks become a quickening heartbeat. Only while hunting; the scare owns the
+    // motor once it starts.
     val prox = viewModel.proximity
     LaunchedEffect(heat) {
         ambience.setTempo(prox.tempo(heat))
@@ -177,7 +179,10 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
             val h = viewModel.heat.value
             val s = viewModel.state.value
             val hunting = s is GhostState.Searching || (s is GhostState.Locked && !s.haunted)
-            if (hunting && h >= prox.tickFromHeat) {
+            if (hunting && prox.heartbeat(h)) {
+                haptics.heartbeat(prox.tickStrength(h))
+                delay(prox.heartbeatPeriodMs(h))
+            } else if (hunting && h >= prox.tickFromHeat) {
                 haptics.tick(prox.tickStrength(h), prox.tickDurationMs)
                 delay(prox.tickPeriodMs(h))
             } else {

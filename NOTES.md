@@ -185,6 +185,12 @@ Read this before starting any task. Append after finishing: what changed, what w
 - Words COLD / WARM / HOT / HERE: keep, or spookier (e.g. QUIET / STIRRING / CLOSE / HERE)?
 - Three stingers: approve, or record her own?
 
+## 2026-10-24 — Jolt at the lock, heartbeat when hot
+
+- `ScareHaptics.jolt()`: one 130 ms full-strength hit the instant a haunted lock happens (radar goes red, HERE), half a second before the whisper ends and the bang lands. Two flinches per scare. `ProximityConfig.joltAtLock`.
+- `ScareHaptics.heartbeat(strength)`: lub (60 ms) – gap – dub (45 ms). From heat 0.55 (the HOT band) the hunting ticks become this, every 950 ms quickening to every 480 ms at heat 1. Still stops the moment the scare starts.
+- Both are haptics only; nothing on screen changed. Both fall under Nila's "no build-up" question already logged above.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?

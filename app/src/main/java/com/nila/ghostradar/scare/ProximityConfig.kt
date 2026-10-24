@@ -17,6 +17,12 @@ data class ProximityConfig(
     val tickDurationMs: Long = 18L,
     val tickStrengthMin: Float = 0.25f,
     val tickStrengthMax: Float = 0.9f,
+    /** From this heat the ticks become a two-beat heartbeat; its period at that heat and at heat 1. */
+    val heartbeatFromHeat: Float = 0.55f,
+    val heartbeatPeriodSlowMs: Long = 950L,
+    val heartbeatPeriodFastMs: Long = 480L,
+    /** One hard hit when a haunted lock happens, before the whisper and the bang. */
+    val joltAtLock: Boolean = true,
     /** Ambience playback speed at heat 1 (1.0 = normal). Pitch stays put. */
     val tempoMaxSpeed: Float = 1.6f,
     /** Ambience volume at heat 0 and heat 1. */
@@ -27,6 +33,11 @@ data class ProximityConfig(
     fun tickPeriodMs(heat: Float): Long = lerp(tickPeriodWarmMs.toFloat(), tickPeriodHotMs.toFloat(), warmth(heat)).toLong()
     fun tickStrength(heat: Float): Float = lerp(tickStrengthMin, tickStrengthMax, warmth(heat))
     fun tempo(heat: Float): Float = lerp(1f, tempoMaxSpeed, heat)
+    fun heartbeat(heat: Float): Boolean = heat >= heartbeatFromHeat
+    fun heartbeatPeriodMs(heat: Float): Long {
+        val t = ((heat - heartbeatFromHeat) / (1f - heartbeatFromHeat)).coerceIn(0f, 1f)
+        return lerp(heartbeatPeriodSlowMs.toFloat(), heartbeatPeriodFastMs.toFloat(), t).toLong()
+    }
     fun ambienceVolume(heat: Float): Float = lerp(ambienceVolumeCold, ambienceVolumeHot, heat)
 
     /** 0 at [tickFromHeat], 1 at heat 1. */
