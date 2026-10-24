@@ -191,6 +191,19 @@ Read this before starting any task. Append after finishing: what changed, what w
 - `ScareHaptics.heartbeat(strength)`: lub (60 ms) – gap – dub (45 ms). From heat 0.55 (the HOT band) the hunting ticks become this, every 950 ms quickening to every 480 ms at heat 1. Still stops the moment the scare starts.
 - Both are haptics only; nothing on screen changed. Both fall under Nila's "no build-up" question already logged above.
 
+## 2026-10-24 — The aftermath (Hari: "why do we show the normal camera after we hit the ghost")
+
+Before: after the lunge the overlay faded and the bare camera sat on screen for the whole cooldown (up to 7 s). Flat, and it says "just a phone".
+
+Now, the third beat of the scare:
+- **Cut to black.** On entering Cooldown: black, a burst of static (re-rolled every frame), SIGNAL LOST flickering in red, for `ScareConfig.blackoutMs` (1.2 s). `radar/SignalLost`.
+- **The radar comes back wounded.** It fades in red, shaking up to 14 px (`ProximityConfig.shakeMaxPx`), status line SIGNAL LOST blinking, readout GONE, and cools to green over the cooldown: `GhostViewModel.heat` ramps 1 → 0 across `cooldownMaxMs`. The heartbeat keeps going and slows with it.
+- **Aftershock.** At `aftershockAtMs` (2.0 s after the lunge) the face flashes full-width over black for 90 ms with a 90 ms full-strength thump. `radar/AftershockFlash`.
+- The camera is never shown plain after a scare; "point away → doll is normal" is still true of the real doll, which is the point.
+- Measured on the moto g: Locked → Scaring 1.35 s (voice line), Scaring → Cooldown 1.75 s, stinger ends 7.2 s after it started, cooldown ends with it. No errors.
+
+**Changes Nila's approved journey (step 5):** she signed off "overlay disappears, doll is normal" on the camera. She needs to see this version and say yes or no. SIGNAL LOST / GONE are placeholder words.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?

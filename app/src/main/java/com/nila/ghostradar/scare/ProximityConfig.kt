@@ -21,6 +21,8 @@ data class ProximityConfig(
     val heartbeatFromHeat: Float = 0.55f,
     val heartbeatPeriodSlowMs: Long = 950L,
     val heartbeatPeriodFastMs: Long = 480L,
+    /** After a scare the dish shakes by up to this many pixels, settling as the heat cools. */
+    val shakeMaxPx: Float = 14f,
     /** One hard hit when a haunted lock happens, before the whisper and the bang. */
     val joltAtLock: Boolean = true,
     /** Ambience playback speed at heat 1 (1.0 = normal). Pitch stays put. */

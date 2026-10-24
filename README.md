@@ -23,9 +23,12 @@ Detection needs a real device; the emulator camera is useless for this.
    amber then red, COLD becomes WARM then HOT, the rings breathe faster, the phone ticks faster and
    the music speeds up. The arrow swings to the toy. At the lock, one of two things:
    - most of the time a small `FAINT TRACE · NO ANSWER` note appears and that is all;
-   - now and then the radar goes red and says HERE, the music stops, the phone whispers
-     "Bloody Mary", one of three stingers bangs, and the doll lunges.
-4. Point away and everything is normal again.
+   - now and then the radar goes red and says HERE, the phone jolts, whispers "Bloody Mary",
+     one of three stingers bangs, and the doll lunges.
+4. After the lunge the screen cuts to black static, SIGNAL LOST. The radar comes back red and
+   shaking, says GONE, and cools to green; two seconds in, the face flashes once with a thump.
+5. Point away and everything is normal again. The phone never shows the doll "normal" itself;
+   the kid has to look up at the real one.
 
 What decides which toys are haunted (`HauntPolicy.Config`): nothing in the first 15 s of a session,
 at least 45 s between scares, then about 3 in 10 locks, and never more than three faint traces in a

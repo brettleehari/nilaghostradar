@@ -68,8 +68,12 @@ fun RadarScreen(
     val target = state.targetOrNull
     val tracking = state is GhostState.Locked || state is GhostState.Scaring
     val haunted = (state is GhostState.Locked && state.haunted) || state is GhostState.Scaring
+    val gone = state is GhostState.Cooldown
     val colour by animateColorAsState(heatColour(heat), tween(350), label = "heatColour")
     val pulse = breathing(heat, proximity)
+    // Wounded after a scare: the dish shakes, hardest when still red, settling as it cools.
+    val shake = if (gone) heat * proximity.shakeMaxPx else 0f
+    val jitter = shaking(shake)
 
     Column(
         modifier = modifier
@@ -85,7 +89,10 @@ fun RadarScreen(
         Box(
             Modifier
                 .fillMaxWidth()
-                .graphicsLayer { scaleX = pulse; scaleY = pulse },
+                .graphicsLayer {
+                    scaleX = pulse; scaleY = pulse
+                    translationX = jitter.x; translationY = jitter.y
+                },
             contentAlignment = Alignment.Center,
         ) {
             SweepCanvas(
@@ -101,7 +108,7 @@ fun RadarScreen(
             )
         }
         Spacer(Modifier.height(24.dp))
-        HeatReadout(heat = heat, here = haunted, colour = colour)
+        HeatReadout(heat = heat, here = haunted, gone = gone, colour = colour)
         Spacer(Modifier.height(20.dp))
         RadarNotice(notice, colour = colour)
     }
@@ -151,6 +158,18 @@ private fun breathing(heat: Float, proximity: ProximityConfig): Float {
     return 1f + proximity.pulseAmplitude * sin(phase)
 }
 
+/** Random offset re-rolled every frame, amplitude [px]; zero when [px] is 0. */
+@Composable
+private fun shaking(px: Float): androidx.compose.ui.geometry.Offset {
+    var frame by remember { mutableLongStateOf(0L) }
+    LaunchedEffect(px > 0f) {
+        if (px > 0f) while (true) withFrameNanos { frame = it }
+    }
+    if (px <= 0f) return androidx.compose.ui.geometry.Offset.Zero
+    val rng = Random(frame)
+    return androidx.compose.ui.geometry.Offset((rng.nextFloat() * 2f - 1f) * px, (rng.nextFloat() * 2f - 1f) * px)
+}
+
 @Composable
 private fun StatusLine(state: GhostState, colour: Color) {
     val blink by rememberInfiniteTransition(label = "blink").animateFloat(
@@ -165,7 +184,7 @@ private fun StatusLine(state: GhostState, colour: Color) {
             if (state.haunted) stringResource(R.string.radar_locked) to 1f
             else stringResource(R.string.radar_searching) to blink
         is GhostState.Scaring -> stringResource(R.string.radar_scaring) to 1f
-        is GhostState.Cooldown -> stringResource(R.string.radar_cooldown) to 0.6f
+        is GhostState.Cooldown -> stringResource(R.string.radar_cooldown) to blink
     }
     Text(
         text = text,
@@ -178,11 +197,12 @@ private fun StatusLine(state: GhostState, colour: Color) {
     )
 }
 
-/** One word instead of fake metres: COLD / WARM / HOT, or HERE on a haunted lock. PLACEHOLDER words for Nila. */
+/** One word instead of fake metres: COLD / WARM / HOT, HERE on a haunted lock, GONE after a scare. PLACEHOLDER words for Nila. */
 @Composable
-private fun HeatReadout(heat: Float, here: Boolean, colour: Color) {
+private fun HeatReadout(heat: Float, here: Boolean, gone: Boolean, colour: Color) {
     val word = when {
         here -> stringResource(R.string.heat_here)
+        gone -> stringResource(R.string.heat_gone)
         else -> when (SoulHeat.band(heat)) {
             SoulHeat.Band.COLD -> stringResource(R.string.heat_cold)
             SoulHeat.Band.WARM -> stringResource(R.string.heat_warm)

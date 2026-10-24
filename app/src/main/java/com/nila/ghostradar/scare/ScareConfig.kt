@@ -32,6 +32,12 @@ data class ScareConfig(
     val fadeOutMs: Int = 400,
     /** Cooldown ends when the song ends or after this, whichever is shorter. */
     val cooldownMaxMs: Long = 8_000L,
+    /** The aftermath: hard cut to black + static for this long, measured from the end of the lunge. */
+    val blackoutMs: Long = 1_200L,
+    /** Then, at this point after the lunge, one flash of the face with a thump. 0 disables it. */
+    val aftershockAtMs: Long = 2_000L,
+    val aftershockFlashMs: Long = 90L,
+    val aftershockRumbleMs: Long = 90L,
     /** Spoken by the phone the moment it locks, before the bang. Empty disables it. */
     val voiceLine: String = "Bloody Mary",
     /** The scare waits for the voice line at most this long. */

@@ -64,6 +64,7 @@ class GhostViewModel(
     private var noticeCount = 0L
 
     private var fakeTargetUntilMs = 0L
+    private var cooldownStartMs = 0L
     private var voiceHoldUntilMs = 0L
 
     /** Hunt screen left the foreground (home, screen off, another app). */
@@ -110,6 +111,9 @@ class GhostViewModel(
         _heat.value = when {
             after is GhostState.Locked && after.haunted -> 1f
             after is GhostState.Scaring -> 1f
+            // Aftermath: the radar comes back red and cools to green over the cooldown.
+            after is GhostState.Cooldown ->
+                (1f - (SystemClock.uptimeMillis() - cooldownStartMs).toFloat() / config.cooldownMaxMs).coerceIn(0f, 1f)
             else -> measured
         }
         if (after is GhostState.Searching) {
@@ -129,10 +133,12 @@ class GhostViewModel(
 
     /** Call when the song ends so the cooldown is "song end or 8 s, whichever is shorter". */
     fun onAudioFinished() {
+        Log.i("GhostRadar", "scare track finished")
         if (_state.value is GhostState.Cooldown) finishCooldown()
     }
 
     private fun onTransition(before: GhostState, after: GhostState) {
+        if (before::class != after::class) Log.i("GhostRadar", "state: ${before::class.simpleName} -> ${after::class.simpleName}")
         if (before !is GhostState.Locked && after is GhostState.Locked) {
             voiceHoldUntilMs = if (!after.haunted || config.voiceLine.isBlank()) 0L
             else SystemClock.uptimeMillis() + config.voiceMaxHoldMs
@@ -150,6 +156,8 @@ class GhostViewModel(
             }
         }
         if (before !is GhostState.Cooldown && after is GhostState.Cooldown) {
+            cooldownStartMs = SystemClock.uptimeMillis()
+            _heat.value = 1f
             scareTimer?.cancel()
             cooldownTimer?.cancel()
             cooldownTimer = viewModelScope.launch {
@@ -161,7 +169,9 @@ class GhostViewModel(
 
     private fun finishCooldown() {
         cooldownTimer?.cancel()
+        val before = _state.value
         _state.value = machine.onCooldownFinished()
+        onTransition(before, _state.value)
         if (_state.value is GhostState.Searching) _snapshot.value = null
     }
 }

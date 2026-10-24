@@ -49,7 +49,9 @@ import com.nila.ghostradar.camera.ResultsOverlay
 import com.nila.ghostradar.detection.DetectionFrame
 import com.nila.ghostradar.detection.DetectionLogger
 import com.nila.ghostradar.haptics.ScareHaptics
+import com.nila.ghostradar.radar.AftershockFlash
 import com.nila.ghostradar.radar.RadarScreen
+import com.nila.ghostradar.radar.SignalLost
 import com.nila.ghostradar.scare.GhostState
 import com.nila.ghostradar.scare.GhostViewModel
 import com.nila.ghostradar.scare.ScareOverlay
@@ -162,7 +164,30 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
                 }
             }
             is GhostState.Scaring -> { ambience.pause(); haptics.scare(); audio.play() }
-            is GhostState.Cooldown -> haptics.stop()
+            is GhostState.Cooldown -> { haptics.stop(); voice.stop() }
+        }
+    }
+
+    // The aftermath: a hard cut to black and static, then the radar back (red, shaking, cooling),
+    // then one flash of the face with a thump when the kid has just relaxed.
+    var blackout by remember { mutableStateOf(false) }
+    var aftershock by remember { mutableStateOf(false) }
+    LaunchedEffect(state is GhostState.Cooldown) {
+        if (state is GhostState.Cooldown) {
+            val cfg = viewModel.config
+            blackout = true
+            delay(cfg.blackoutMs)
+            blackout = false
+            if (cfg.aftershockAtMs > cfg.blackoutMs) {
+                delay(cfg.aftershockAtMs - cfg.blackoutMs)
+                aftershock = true
+                haptics.tick(1f, cfg.aftershockRumbleMs)
+                delay(cfg.aftershockFlashMs)
+                aftershock = false
+            }
+        } else {
+            blackout = false
+            aftershock = false
         }
     }
 
@@ -178,7 +203,8 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         while (true) {
             val h = viewModel.heat.value
             val s = viewModel.state.value
-            val hunting = s is GhostState.Searching || (s is GhostState.Locked && !s.haunted)
+            val hunting = s is GhostState.Searching || (s is GhostState.Locked && !s.haunted) ||
+                (s is GhostState.Cooldown && !blackout)
             if (hunting && prox.heartbeat(h)) {
                 haptics.heartbeat(prox.tickStrength(h))
                 delay(prox.heartbeatPeriodMs(h))
@@ -193,7 +219,8 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
 
     // The radar stays up through Locked so a haunted lock shows red HERE while the phone whispers;
     // it drops the instant Scaring starts and the doll takes the screen.
-    val showRadar = state is GhostState.Searching || state is GhostState.Locked
+    val showRadar = state is GhostState.Searching || state is GhostState.Locked ||
+        (state is GhostState.Cooldown && !blackout)
     val radarAlpha by animateFloatAsState(
         targetValue = if (showRadar) RADAR_BACKGROUND_ALPHA else 0f,
         animationSpec = tween(if (showRadar) 600 else 150),
@@ -226,6 +253,8 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
                 modifier = Modifier.graphicsLayer { alpha = radarAlpha },
             )
         }
+        if (blackout) SignalLost()
+        if (aftershock) AftershockFlash()
         if (BuildConfig.DEBUG) {
             // Topmost so the gesture is not swallowed by PreviewView's own touch handling.
             Box(

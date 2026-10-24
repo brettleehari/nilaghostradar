@@ -14,12 +14,13 @@
     <string name="notice_trace">FAINT TRACE · NO ANSWER</string>
     <string name="notice_no_soul">%1$s · NO SOUL</string>
     <string name="radar_scaring">IT SEES YOU</string>
-    <string name="radar_cooldown">…</string>
+    <string name="radar_cooldown">SIGNAL LOST</string>
     <!-- One-word warmer/colder readout. -->
     <string name="heat_cold">COLD</string>
     <string name="heat_warm">WARM</string>
     <string name="heat_hot">HOT</string>
     <string name="heat_here">HERE</string>
+    <string name="heat_gone">GONE</string>
     <string name="radar_heat_label">SOUL PROXIMITY</string>
 
     <!-- Licences screen -->
