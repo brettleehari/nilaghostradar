@@ -9,6 +9,7 @@ import com.nila.ghostradar.detection.Box
 import com.nila.ghostradar.detection.DetectedObject
 import com.nila.ghostradar.detection.DetectionFrame
 import com.nila.ghostradar.detection.DetectionGate
+import com.nila.ghostradar.detection.SoulHeat
 import com.nila.ghostradar.detection.SoulScanner
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -26,6 +27,8 @@ class GhostViewModel(
     val config: ScareConfig = ScareConfig(),
     private val policy: HauntPolicy = HauntPolicy(),
     private val scanner: SoulScanner = SoulScanner(),
+    private val heatMeter: SoulHeat = SoulHeat(),
+    val proximity: ProximityConfig = ProximityConfig(),
 ) : ViewModel() {
 
     private val machine = GhostStateMachine(decideHaunted = { policy.decide(SystemClock.uptimeMillis()) })
@@ -54,6 +57,10 @@ class GhostViewModel(
     /** The small line on the radar ("FAINT TRACE", "CHAIR · NO SOUL"); null when there is none. */
     val notice: StateFlow<Notice?> = _notice.asStateFlow()
     private var noticeTimer: Job? = null
+
+    private val _heat = MutableStateFlow(0f)
+    /** Warmer/colder, 0..1: how close a toy looks right now. 1 while a haunted lock or scare is on. */
+    val heat: StateFlow<Float> = _heat.asStateFlow()
     private var noticeCount = 0L
 
     private var fakeTargetUntilMs = 0L
@@ -99,6 +106,12 @@ class GhostViewModel(
         val after = machine.onGate(out, target, holdScare = hold)
         _state.value = after
         onTransition(before, after)
+        val measured = heatMeter.onFrame(frame.objects, frame.imageHeight)
+        _heat.value = when {
+            after is GhostState.Locked && after.haunted -> 1f
+            after is GhostState.Scaring -> 1f
+            else -> measured
+        }
         if (after is GhostState.Searching) {
             scanner.scan(frame.objects, frame.timestampMs)?.let { show(Notice.NoSoul(it, ++noticeCount)) }
         }

@@ -105,8 +105,8 @@ fun GhostRadarApp() {
 
 /**
  * Camera analysing underneath, the scare overlay on the preview, the radar on top.
- * The radar is opaque while Searching ("full-screen first") and fades away the moment something
- * is locked so the doll and the face are visible; it returns when the state is Searching again.
+ * The radar is opaque while Searching and Locked ("full-screen first") and fades away the moment
+ * the scare starts so the doll and the face are visible; it returns when the state is Searching again.
  * Scaring starts haptics and audio; the view model's timers handle the rest.
  *
  * Debug builds: long-press anywhere to inject a fake target and see the whole scare without a doll.
@@ -119,6 +119,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     val lastFrame by viewModel.lastFrame.collectAsStateWithLifecycle()
     val snapshot by viewModel.snapshot.collectAsStateWithLifecycle()
     val notice by viewModel.notice.collectAsStateWithLifecycle()
+    val heat by viewModel.heat.collectAsStateWithLifecycle()
     val logger = remember { DetectionLogger() }
     val haptics = remember { ScareHaptics(context) }
     val audio = remember {
@@ -163,7 +164,11 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         }
     }
 
-    val showRadar = state is GhostState.Searching || (state is GhostState.Locked && !(state as GhostState.Locked).haunted)
+    val prox = viewModel.proximity
+
+    // The radar stays up through Locked so a haunted lock shows red HERE while the phone whispers;
+    // it drops the instant Scaring starts and the doll takes the screen.
+    val showRadar = state is GhostState.Searching || state is GhostState.Locked
     val radarAlpha by animateFloatAsState(
         targetValue = if (showRadar) RADAR_BACKGROUND_ALPHA else 0f,
         animationSpec = tween(if (showRadar) 600 else 150),
@@ -190,6 +195,8 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
             RadarScreen(
                 state = state,
                 notice = notice,
+                heat = heat,
+                proximity = prox,
                 backgroundAlpha = 1f,
                 modifier = Modifier.graphicsLayer { alpha = radarAlpha },
             )

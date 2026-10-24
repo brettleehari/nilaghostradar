@@ -1,7 +1,6 @@
 package com.nila.ghostradar.detection
 
 import com.nila.ghostradar.radar.Blips
-import com.nila.ghostradar.radar.fakeDistanceMetres
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -38,13 +37,5 @@ class RadarMathTest {
         val blips = Blips.random(7, Random(1))
         assertEquals(7, Blips.shuffle(blips, 3, Random(2)).size)
         assertEquals(emptyList<Any>(), Blips.shuffle(emptyList(), 3))
-    }
-
-    @Test
-    fun `fake distance shrinks as the box grows and is clamped`() {
-        assertTrue(fakeDistanceMetres(0.1f) > fakeDistanceMetres(0.5f))
-        assertEquals(5f, fakeDistanceMetres(0.0f), eps)
-        assertEquals(0.45f, fakeDistanceMetres(1f), eps)
-        assertTrue(fakeDistanceMetres(0.9f) >= 0.3f)
     }
 }

@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -28,7 +29,7 @@ import com.nila.ghostradar.ui.theme.RadarGreen
  * PLACEHOLDER copy and style; Nila decides (open question in NOTES.md).
  */
 @Composable
-fun RadarNotice(notice: Notice?, modifier: Modifier = Modifier) {
+fun RadarNotice(notice: Notice?, modifier: Modifier = Modifier, colour: Color = RadarGreen) {
     Box(modifier.height(36.dp), contentAlignment = Alignment.Center) {
         AnimatedContent(
             targetState = notice,
@@ -40,12 +41,12 @@ fun RadarNotice(notice: Notice?, modifier: Modifier = Modifier) {
             if (n != null) {
                 Text(
                     text = noticeText(n),
-                    color = RadarGreen,
+                    color = colour,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 13.sp,
                     letterSpacing = 2.sp,
                     modifier = Modifier
-                        .border(1.dp, RadarGreen.copy(alpha = 0.5f), RoundedCornerShape(50))
+                        .border(1.dp, colour.copy(alpha = 0.5f), RoundedCornerShape(50))
                         .padding(horizontal = 14.dp, vertical = 6.dp),
                 )
             }
