@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -33,7 +34,7 @@ import kotlin.random.Random
  */
 @Composable
 fun SignalLost(modifier: Modifier = Modifier) {
-    var frame by mutableLongStateOf(0L)
+    var frame by remember { mutableLongStateOf(0L) }
     LaunchedEffect(Unit) {
         while (true) withFrameNanos { frame = it }
     }
