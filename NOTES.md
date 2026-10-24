@@ -215,7 +215,7 @@ Now, the third beat of the scare:
 Log: bear at 0.77–0.87 for 34 s straight, locked at 14.9 s into the session → warm-up skip → faint trace. It stayed Locked (one decision per lock) while the radar still said HOT with the heartbeat going and the pill gone after 2.5 s. Detection was fine; the rarity rule was working but the screen contradicted it.
 
 - Fix: on a faint-trace lock the heat is capped at `ProximityConfig.traceHeatCap` (0.4), so HOT settles to WARM, amber, ticks instead of heartbeat: "there, but not awake". The FAINT TRACE pill now stays for the whole lock and clears when the toy leaves.
-- Open for Hari: should holding on a toy re-roll the dice (e.g. every 10 s), so patience wakes it? Today one lock = one decision; the kid must point away and back.
+- Hari's answer: yes. A held faint trace is re-rolled every `HauntPolicy.Config.rerollMs` (10 s) through the same policy (warm-up, gap, chance, guarantee all apply), so holding ~30 s on a toy always ends in a scare. `GhostStateMachine.wakeUp()` (2 tests) flips the lock to haunted; the hunt screen's lock effects are keyed on the haunted flag so the jolt, whisper and music stop fire on the wake-up too.
 
 ## Open questions for Nila
 

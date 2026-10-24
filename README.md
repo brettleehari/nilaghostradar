@@ -32,5 +32,6 @@ Detection needs a real device; the emulator camera is useless for this.
 
 What decides which toys are haunted (`HauntPolicy.Config`): nothing in the first 15 s of a session,
 at least 45 s between scares, then about 3 in 10 locks, and never more than three faint traces in a
-row. A session is one hunt: leaving the app for a minute or more starts a fresh one; a short
+row. Holding on a toy that gave a faint trace rolls the dice again every 10 s, so patience
+wakes it. A session is one hunt: leaving the app for a minute or more starts a fresh one; a short
 interruption (a call, the screen going off briefly) does not.

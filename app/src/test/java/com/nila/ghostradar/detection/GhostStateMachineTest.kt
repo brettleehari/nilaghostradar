@@ -127,4 +127,21 @@ class GhostStateMachineTest {
         assertEquals(GhostState.Searching, m.onScareFinished())
         assertEquals(GhostState.Searching, m.onCooldownFinished())
     }
+
+    @Test
+    fun `a faint trace can wake up and then scares`() {
+        val m = GhostStateMachine(decideHaunted = { false })
+        assertEquals(GhostState.Locked(target, haunted = false), m.feed(locked(just = true)))
+        assertEquals(GhostState.Locked(target, haunted = false), m.feed(locked()))
+        assertEquals(GhostState.Locked(target, haunted = true), m.wakeUp())
+        assertTrue(m.feed(locked()) is GhostState.Scaring)
+    }
+
+    @Test
+    fun `wake up is a no-op outside a faint trace`() {
+        val m = GhostStateMachine()
+        assertEquals(GhostState.Searching, m.wakeUp())
+        m.feed(locked(just = true)); m.feed(locked())
+        assertTrue(m.wakeUp() is GhostState.Scaring)
+    }
 }

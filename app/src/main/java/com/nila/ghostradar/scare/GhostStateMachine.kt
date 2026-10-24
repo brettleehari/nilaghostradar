@@ -8,7 +8,8 @@ import com.nila.ghostradar.detection.DetectionGate
  * - Searching: the gate locking moves to Locked.
  * - Locked: the very next frame promotes to Scaring (the scare starts "instantly", no build-up),
  *   unless the caller asks to hold (voice line still playing). Losing the lock before that drops
- *   back to Searching without a scare.
+ *   back to Searching without a scare. An unhaunted lock (a faint trace) sits here until the lock
+ *   is lost, or until the caller re-rolls and [wakeUp] turns it haunted.
  * - Scaring: the target keeps updating so the overlay follows the doll. Ends when the scare
  *   timeline finishes or the target is lost, either way into Cooldown.
  * - Cooldown: one scare per lock. Back to Searching only once the cooldown timer has run out
@@ -51,6 +52,13 @@ class GhostStateMachine(
                 if (cooldownTimerDone && !gate.locked) GhostState.Searching
                 else s.copy(target = target ?: s.target)
         }
+        return state
+    }
+
+    /** A faint trace re-rolled as haunted: the lock is kept, the next frame scares. No-op otherwise. */
+    fun wakeUp(): GhostState {
+        val s = state
+        if (s is GhostState.Locked && !s.haunted) state = s.copy(haunted = true)
         return state
     }
 

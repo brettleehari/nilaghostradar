@@ -149,7 +149,8 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
 
     // Side effects on state entry. The ambience stops the moment a lock happens so the stinger
     // lands on silence.
-    LaunchedEffect(state::class) {
+    // Keyed on the class and on the haunted flag, so a faint trace that wakes up fires the lock effects.
+    LaunchedEffect(state::class, (state as? GhostState.Locked)?.haunted) {
         when (state) {
             GhostState.Searching -> { haptics.stop(); audio.stop(); voice.stop(); ambience.play() }
             is GhostState.Locked -> {

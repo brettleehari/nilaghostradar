@@ -25,7 +25,8 @@ import kotlinx.coroutines.launch
 class GhostViewModel(
     private val gate: DetectionGate = DetectionGate(),
     val config: ScareConfig = ScareConfig(),
-    private val policy: HauntPolicy = HauntPolicy(),
+    private val policyConfig: HauntPolicy.Config = HauntPolicy.Config(),
+    private val policy: HauntPolicy = HauntPolicy(policyConfig),
     private val scanner: SoulScanner = SoulScanner(),
     private val heatMeter: SoulHeat = SoulHeat(),
     val proximity: ProximityConfig = ProximityConfig(),
@@ -65,6 +66,8 @@ class GhostViewModel(
 
     private var fakeTargetUntilMs = 0L
     private var cooldownStartMs = 0L
+    /** When the current lock was last judged; a held faint trace is re-rolled every rerollMs. */
+    private var lastDecisionMs = 0L
     private var voiceHoldUntilMs = 0L
 
     /** Hunt screen left the foreground (home, screen off, another app). */
@@ -104,7 +107,18 @@ class GhostViewModel(
         val target = out.target?.toTarget(frame.imageWidth, frame.imageHeight)
         val before = _state.value
         val hold = SystemClock.uptimeMillis() < voiceHoldUntilMs
-        val after = machine.onGate(out, target, holdScare = hold)
+        var after = machine.onGate(out, target, holdScare = hold)
+        val now = SystemClock.uptimeMillis()
+        if (before !is GhostState.Locked && after is GhostState.Locked) lastDecisionMs = now
+        if (after is GhostState.Locked && !after.haunted && now - lastDecisionMs >= policyConfig.rerollMs) {
+            lastDecisionMs = now
+            if (policy.decide(now)) {
+                after = machine.wakeUp()
+                Log.i("GhostRadar", "faint trace re-rolled: haunted")
+            } else {
+                Log.i("GhostRadar", "faint trace re-rolled: still faint")
+            }
+        }
         _state.value = after
         onTransition(before, after)
         val measured = heatMeter.onFrame(frame.objects, frame.imageHeight)
@@ -145,10 +159,14 @@ class GhostViewModel(
         if (before is GhostState.Locked && after !is GhostState.Locked && _notice.value is Notice.FaintTrace) {
             _notice.value = null
         }
-        if (before !is GhostState.Locked && after is GhostState.Locked) {
-            voiceHoldUntilMs = if (!after.haunted || config.voiceLine.isBlank()) 0L
+        val newLock = before !is GhostState.Locked && after is GhostState.Locked
+        val wokeUp = before is GhostState.Locked && !before.haunted && after is GhostState.Locked && after.haunted
+        if (newLock || wokeUp) {
+            val a = after as GhostState.Locked
+            voiceHoldUntilMs = if (!a.haunted || config.voiceLine.isBlank()) 0L
             else SystemClock.uptimeMillis() + config.voiceMaxHoldMs
-            if (!after.haunted) show(Notice.FaintTrace(++noticeCount))
+            if (!a.haunted) show(Notice.FaintTrace(++noticeCount))
+            else if (_notice.value is Notice.FaintTrace) _notice.value = null
         }
         if (before !is GhostState.Scaring && after is GhostState.Scaring) {
             _snapshot.value = latestImage?.let { cutOut(it, after.target.box, config.cutoutMarginFraction) }

@@ -12,7 +12,8 @@ import kotlin.random.Random
  *  - otherwise each lock is haunted with probability [Config.chance];
  *  - but after [Config.guaranteeAfterSkips] consecutive skipped locks the next eligible lock is
  *    haunted for sure, so a patient kid always gets one;
- *  - at most [Config.maxPerSession] scares per session (0 = unlimited).
+ *  - at most [Config.maxPerSession] scares per session (0 = unlimited);
+ *  - a faint trace that is held gets a fresh roll every [Config.rerollMs] (the view model asks).
  *
  * A session is one hunt: it starts when the hunt screen opens and restarts when the app comes back
  * after being away (home button, screen off, another app) for [Config.sessionResetAfterMs] or more.
@@ -31,6 +32,7 @@ class HauntPolicy(
         val guaranteeAfterSkips: Int = 3,
         val maxPerSession: Int = 0,
         val sessionResetAfterMs: Long = 60_000L,
+        val rerollMs: Long = 10_000L,
     )
 
     private var sessionStartMs = Long.MIN_VALUE
