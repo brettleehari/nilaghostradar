@@ -163,6 +163,28 @@ Read this before starting any task. Append after finishing: what changed, what w
 - Should people get a readout too (`PERSON · NO SOUL`)? Off for now; one line in `SoulScanner.Config.skipLabels` turns it on.
 - Is 2.5 s on screen right for a notice?
 
+## 2026-10-24 — Warmer/colder (Find My feel), ticks, tempo, three stingers
+
+**Hari's ask:** no reading needed; colour says how near a soul is; music rises; two or three haunted tracks at random.
+
+- `detection/SoulHeat` (pure, 4 tests): per frame, the strongest teddy-bear detection → raw heat from score (60 %) and box height (40 %), smoothed (rises 45 % of the gap per frame, falls 18 %). `GhostViewModel.heat` is that value, pinned to 1 during a haunted Lock and Scaring.
+- **Colour:** `radar/RadarPalette.heatColour` ramps green → amber (`#FFB300`) → red (`#FF1E3C`); rings, sweep, arrow, status line, readout and notice pill all follow it (350 ms colour tween).
+- **Words instead of metres:** readout now COLD / WARM / HOT (heat < 0.2 / < 0.55 / else), HERE on a haunted lock. Label "SOUL PROXIMITY". `fakeDistanceMetres` and its test removed.
+- **Pulse:** the dish breathes ±2.5 % on a phase whose speed follows heat (period 2.4 s cold → 0.45 s hot), so tempo changes never jump.
+- **Haptic ticks:** `ScareHaptics.tick(strength)`; from heat 0.15 the phone taps every 1.1 s, down to every 220 ms at heat 1, strength 0.25 → 0.9. Only while Searching or on a faint-trace lock; the scare owns the motor otherwise.
+- **Music tempo:** `AmbientAudio.setTempo` via `PlaybackParams` (speed 1.0 → 1.6, pitch held), quantised to 0.05; volume 0.6 → 0.9. Applied only while playing: setting PlaybackParams on a paused MediaPlayer starts it.
+- **Three stingers at random:** `ScareAudio` now preloads a list and picks one per scare, never the same twice running. `scare_track_2.wav` (deeper bang, falling wail, bells) and `scare_track_3.wav` (double bang, high shriek, glass) come from the same in-repo generator; listed in ASSETS.md. Private override slots take the same three names.
+- The radar now stays up through a haunted Lock (red, HERE, whisper) and drops when Scaring starts.
+- All numbers in `ProximityConfig` (and `SoulHeat.Config`).
+- Verified on the moto g: colour ramp green → amber with HOT as a toy appears; stinger #3 picked; no errors. Lint unchanged, 55 tests pass.
+
+**Nila must confirm (these sit next to her "no slow build-up, no accelerating beeps" rule):** the haptic ticks and the music speeding up are a navigation feel while hunting, not the scare itself, but it is her rule. Either is one line to switch off (`tickFromHeat = 2f`, `tempoMaxSpeed = 1f`).
+
+**New questions for Nila**
+- Colour ramp green → amber → red: keep, or her own colours?
+- Words COLD / WARM / HOT / HERE: keep, or spookier (e.g. QUIET / STIRRING / CLOSE / HERE)?
+- Three stingers: approve, or record her own?
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?

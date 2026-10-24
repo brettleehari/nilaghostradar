@@ -17,11 +17,14 @@ Detection needs a real device; the emulator camera is useless for this.
 ## How a hunt works
 
 1. Open the app. The radar sweeps and says SEARCHING…. That is the start of a **session**.
-2. Point the phone around the room. Things the camera recognises get a small readout under the
-   distance: `CHAIR · NO SOUL`, `BED · NO SOUL`. Nothing else happens.
-3. Point at a doll or a teddy. The radar locks on and the arrow swings to it. Then one of two things:
+2. Point the phone around the room. The radar is green, breathes slowly and says COLD. Things the
+   camera recognises get a small readout: `CHAIR · NO SOUL`, `BED · NO SOUL`. Nothing else happens.
+3. Point toward a doll or a teddy. Find My style, the radar warms as you get closer: green turns
+   amber then red, COLD becomes WARM then HOT, the rings breathe faster, the phone ticks faster and
+   the music speeds up. The arrow swings to the toy. At the lock, one of two things:
    - most of the time a small `FAINT TRACE · NO ANSWER` note appears and that is all;
-   - now and then the music stops, the phone whispers "Bloody Mary", bangs, and the doll lunges.
+   - now and then the radar goes red and says HERE, the music stops, the phone whispers
+     "Bloody Mary", one of three stingers bangs, and the doll lunges.
 4. Point away and everything is normal again.
 
 What decides which toys are haunted (`HauntPolicy.Config`): nothing in the first 15 s of a session,

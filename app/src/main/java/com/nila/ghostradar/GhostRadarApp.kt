@@ -124,7 +124,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     val logger = remember { DetectionLogger() }
     val haptics = remember { ScareHaptics(context) }
     val audio = remember {
-        ScareAudio(context, R.raw.scare_track, onFinished = viewModel::onAudioFinished)
+        ScareAudio(context, SCARE_TRACKS, onFinished = viewModel::onAudioFinished)
     }
     val ambience = remember { AmbientAudio(context, R.raw.radar_ambience) }
     val voice = remember { VoiceLine(context) }
@@ -269,6 +269,9 @@ private fun DebugPanel(frame: DetectionFrame?, state: GhostState) {
         }
     }
 }
+
+/** Stingers; one is picked at random per scare. Same names in the private override slots replace them. */
+private val SCARE_TRACKS = listOf(R.raw.scare_track, R.raw.scare_track_2, R.raw.scare_track_3)
 
 /** Debug flags. CPU delegate is the v1 default. */
 private const val USE_GPU_DELEGATE = false
