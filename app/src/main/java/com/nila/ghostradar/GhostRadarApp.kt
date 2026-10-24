@@ -40,6 +40,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import com.nila.ghostradar.audio.AmbientAudio
 import com.nila.ghostradar.audio.ScareAudio
 import com.nila.ghostradar.audio.VoiceLine
@@ -164,7 +165,26 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         }
     }
 
+    // Warmer/colder: music speeds up and swells, and the phone ticks faster, as a toy gets closer.
+    // Ticks only while hunting; the scare owns the motor once it starts.
     val prox = viewModel.proximity
+    LaunchedEffect(heat) {
+        ambience.setTempo(prox.tempo(heat))
+        ambience.setVolume(prox.ambienceVolume(heat))
+    }
+    LaunchedEffect(Unit) {
+        while (true) {
+            val h = viewModel.heat.value
+            val s = viewModel.state.value
+            val hunting = s is GhostState.Searching || (s is GhostState.Locked && !s.haunted)
+            if (hunting && h >= prox.tickFromHeat) {
+                haptics.tick(prox.tickStrength(h), prox.tickDurationMs)
+                delay(prox.tickPeriodMs(h))
+            } else {
+                delay(120L)
+            }
+        }
+    }
 
     // The radar stays up through Locked so a haunted lock shows red HERE while the phone whispers;
     // it drops the instant Scaring starts and the doll takes the screen.

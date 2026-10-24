@@ -31,6 +31,22 @@ class ScareHaptics(context: Context) {
         v.vibrate(effect)
     }
 
+    /**
+     * One short Find My-style tap. [strength] 0..1 sets the amplitude where the motor allows it.
+     * Cheap enough to call several times a second.
+     */
+    fun tick(strength: Float, durationMs: Long = 18L) {
+        val v = vibrator ?: return
+        if (!v.hasVibrator()) return
+        val amp = (strength.coerceIn(0.05f, 1f) * 255).toInt().coerceIn(1, 255)
+        val effect = if (v.hasAmplitudeControl()) {
+            VibrationEffect.createOneShot(durationMs, amp)
+        } else {
+            VibrationEffect.createOneShot(durationMs, VibrationEffect.DEFAULT_AMPLITUDE)
+        }
+        v.vibrate(effect)
+    }
+
     fun stop() {
         vibrator?.cancel()
     }
