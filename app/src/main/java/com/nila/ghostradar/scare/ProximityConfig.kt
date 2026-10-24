@@ -21,6 +21,8 @@ data class ProximityConfig(
     val heartbeatFromHeat: Float = 0.55f,
     val heartbeatPeriodSlowMs: Long = 950L,
     val heartbeatPeriodFastMs: Long = 480L,
+    /** On a faint-trace lock the heat is capped here, so HOT settles back to WARM: it is there, but not awake. */
+    val traceHeatCap: Float = 0.4f,
     /** After a scare the dish shakes by up to this many pixels, settling as the heat cools. */
     val shakeMaxPx: Float = 14f,
     /** One hard hit when a haunted lock happens, before the whisper and the bang. */

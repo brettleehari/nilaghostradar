@@ -110,6 +110,7 @@ class GhostViewModel(
         val measured = heatMeter.onFrame(frame.objects, frame.imageHeight)
         _heat.value = when {
             after is GhostState.Locked && after.haunted -> 1f
+            after is GhostState.Locked -> minOf(measured, proximity.traceHeatCap)
             after is GhostState.Scaring -> 1f
             // Aftermath: the radar comes back red and cools to green over the cooldown.
             after is GhostState.Cooldown ->
@@ -121,10 +122,12 @@ class GhostViewModel(
         }
     }
 
+    /** A faint trace stays up for the whole lock; everything else clears after [ScareConfig.noticeMs]. */
     private fun show(n: Notice) {
         Log.i("GhostRadar", "notice: $n")
         _notice.value = n
         noticeTimer?.cancel()
+        if (n is Notice.FaintTrace) return
         noticeTimer = viewModelScope.launch {
             delay(config.noticeMs)
             if (_notice.value?.id == n.id) _notice.value = null
@@ -139,6 +142,9 @@ class GhostViewModel(
 
     private fun onTransition(before: GhostState, after: GhostState) {
         if (before::class != after::class) Log.i("GhostRadar", "state: ${before::class.simpleName} -> ${after::class.simpleName}")
+        if (before is GhostState.Locked && after !is GhostState.Locked && _notice.value is Notice.FaintTrace) {
+            _notice.value = null
+        }
         if (before !is GhostState.Locked && after is GhostState.Locked) {
             voiceHoldUntilMs = if (!after.haunted || config.voiceLine.isBlank()) 0L
             else SystemClock.uptimeMillis() + config.voiceMaxHoldMs
