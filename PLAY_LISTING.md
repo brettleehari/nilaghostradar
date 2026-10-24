@@ -18,7 +18,7 @@ export JAVA_HOME=~/Library/Java/JavaVirtualMachines/jdk-21.0.12.1+1/Contents/Hom
 ## Before the first upload — decisions that are permanent
 
 - **applicationId.** Currently the placeholder `com.nila.ghostradar`. It cannot change after upload. Hari decides.
-- **App name.** "Ghost Radar" in `strings.xml`; Nila's call.
+- **App name.** "Nila" in `strings.xml` (Hari, 2026-10-24); the launcher shows it, the listing title can differ.
 - **Listing category:** Entertainment. **Not** a kids/family listing (see the brief).
 
 ## Store listing (draft — Nila to rewrite)

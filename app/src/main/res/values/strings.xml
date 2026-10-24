@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name">Ghost Radar</string>
+    <string name="app_name">Nila</string>
 
     <!-- Camera rationale screen (shown before the runtime permission request). -->
     <string name="rationale_title">Ghost Radar needs your camera</string>
     <string name="rationale_body">The camera looks for ghosts hiding in toys. Everything happens on this phone. Nothing is recorded, saved, or sent anywhere.</string>
     <string name="rationale_continue">Start hunting</string>
-    <string name="rationale_denied">Without the camera there is nothing to hunt. You can allow it in Android Settings › Apps › Ghost Radar › Permissions.</string>
+    <string name="rationale_denied">Without the camera there is nothing to hunt. You can allow it in Android Settings › Apps › Nila › Permissions.</string>
 
     <!-- Radar screen. PLACEHOLDER copy until Nila signs it off. -->
     <string name="radar_searching">SEARCHING…</string>

@@ -217,6 +217,10 @@ Log: bear at 0.77–0.87 for 34 s straight, locked at 14.9 s into the session �
 - Fix: on a faint-trace lock the heat is capped at `ProximityConfig.traceHeatCap` (0.4), so HOT settles to WARM, amber, ticks instead of heartbeat: "there, but not awake". The FAINT TRACE pill now stays for the whole lock and clears when the toy leaves.
 - Hari's answer: yes. A held faint trace is re-rolled every `HauntPolicy.Config.rerollMs` (10 s) through the same policy (warm-up, gap, chance, guarantee all apply), so holding ~30 s on a toy always ends in a scare. `GhostStateMachine.wakeUp()` (2 tests) flips the lock to haunted; the hunt screen's lock effects are keyed on the haunted flag so the jolt, whisper and music stop fire on the wake-up too.
 
+## 2026-10-24 — App name
+
+- Launcher name is now "Nila" (`app_name`, Hari's call). The camera screen still says "Ghost Radar needs your camera"; the Settings path in the denied text says Nila. The Play listing title can stay "Nila Deha's Ghost Radar".
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?
