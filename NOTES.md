@@ -221,6 +221,15 @@ Log: bear at 0.77–0.87 for 34 s straight, locked at 14.9 s into the session �
 
 - Launcher name is now "Nila" (`app_name`, Hari's call). The camera screen still says "Ghost Radar needs your camera"; the Settings path in the denied text says Nila. The Play listing title can stay "Nila Diha's Ghost Radar".
 
+## 2026-10-26 — iOS app (Hari: "create an equivalent iOS app, feature parity")
+
+- `ios/`: SwiftUI app + `GhostCore` Swift package. Same MediaPipe model file, same detector settings (live stream, 0.3, 3 results), same gate/policy/state machine/heat/scanner logic ported line for line with the same numbers; 29 package tests pass on the Mac (`swift test`).
+- Parity list: rationale → camera permission → hunt; radar with heat colour, pulse, shake, COLD/WARM/HOT/HERE/GONE, notices (faint trace sticky, no-soul readouts); sessions with pause/resume reset; 10 s re-roll; jolt, ticks, heartbeat, scare rumble, aftershock (Core Haptics); three loops and three stingers at random, tempo and volume follow heat (AVAudioPlayer rate keeps pitch); "Bloody Mary" via AVSpeechSynthesizer; doll cutout + evil face lunge; blackout + SIGNAL LOST + aftershock flash; licences screen; debug panel and long-press demo; launcher name Nila.
+- MediaPipe iOS frameworks come as CocoaPods archives; CocoaPods could not be installed (Homebrew's Ruby is broken on this Mac), so `ios/fetch_mediapipe.sh` fetches the same archives and the xcodegen spec links the XCFrameworks and force-loads the graph library, as the podspec's xcconfig does.
+- Project is generated with xcodegen, never committed; team, bundle-id prefix (`io.github.brettleehari.ghostradar`) and iOS 17 floor follow the arivu app on this Mac.
+- Verified on the iPhone 17 simulator with the demo flag: radar, red HERE lock, scare, SIGNAL LOST static, orange GONE cooldown. Device build signs; install needs the iPhone unlocked.
+- Not yet verified on a real iPhone: camera orientation (connection rotated to portrait, boxes assumed upright 480x640), detection speed, haptic feel, speech voice. First thing to test when the phone is unlocked.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?

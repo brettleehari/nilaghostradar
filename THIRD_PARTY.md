@@ -35,3 +35,14 @@ No new dependency without a row here (name, version, licence).
 - `vahitkeskin/LoopSweep`, `skydoves/compose-animations`, `aubreybailey/ghost-radar` — not yet consulted; licences to be confirmed before any copy.
 
 An OSS licences screen is still to be added (P4).
+
+## iOS build (`ios/`)
+
+| Dependency | Version | License | Use |
+|---|---|---|---|
+| MediaPipeTasksVision (iOS) | 1.0.0 | Apache-2.0 | Object detector, live-stream mode |
+| MediaPipeTasksCommon (iOS) | 1.0.0 | Apache-2.0 | MediaPipe runtime the vision tasks need |
+
+Both are fetched by `ios/fetch_mediapipe.sh` from the archives the CocoaPods specs point at; their
+LICENSE and NOTICE files land in `ios/Vendor/` and the texts are already in
+`third_party_notices.txt`, which the iOS licences screen shows. Everything else is Apple SDK.

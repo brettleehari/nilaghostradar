@@ -14,6 +14,10 @@ adb logcat -s GhostRadar
 
 Detection needs a real device; the emulator camera is useless for this.
 
+## iOS
+
+The same app for iPhone lives in `ios/` (Swift, SwiftUI, same model and numbers). See `ios/README.md`.
+
 ## How a hunt works
 
 1. Open the app. The radar sweeps and says SEARCHING…. That is the start of a **session**.

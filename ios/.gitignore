@@ -1,0 +1,9 @@
+# Generated / fetched; see project.yml and fetch_mediapipe.sh
+*.xcodeproj
+*.xcworkspace
+Vendor/
+build/
+DerivedData/
+.build/
+*.xcuserstate
+xcuserdata/
