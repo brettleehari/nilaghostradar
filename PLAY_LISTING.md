@@ -23,7 +23,7 @@ export JAVA_HOME=~/Library/Java/JavaVirtualMachines/jdk-21.0.12.1+1/Contents/Hom
 
 ## Store listing (draft — Nila to rewrite)
 
-- Title: Nila Deha's Ghost Radar
+- Title: Nila Diha's Ghost Radar
 - Short description: Point your phone at a toy. Something is hiding inside it.
 - Full description: A Halloween prank for the living room. The radar sweeps, the arrow swings, and when the camera finds a doll or a teddy bear the phone shakes, the music starts and the toy's face is not the toy's face any more. Everything happens on your phone: no account, no internet, no ads, nothing recorded.
 - Graphics: v1 icon at `store/icon_512.png`, feature graphic at `store/feature_graphic_1024x500.png` (Nila to approve or redo). Still needed: at least 2 phone screenshots (the radar and the scare), taken on a real phone.

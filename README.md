@@ -1,4 +1,4 @@
-# Nila Deha's Ghost Radar
+# Nila Diha's Ghost Radar
 
 Android Halloween prank: the camera spots a doll or toy, the phone shakes, a creepy song plays and the doll's face turns evil on screen. See `PROJECT.md` for the product brief and `NOTES.md` for the running log.
 

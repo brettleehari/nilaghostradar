@@ -1,4 +1,4 @@
-# PROJECT.md — Nila Deha's Ghost Radar
+# PROJECT.md — Nila Diha's Ghost Radar
 
 Android Halloween prank app. The camera spots a doll or toy; the phone shakes, a creepy song plays, and on screen the doll floats up, its face turns evil, and it drifts toward the camera, growing bigger. Point the phone away and the doll is normal again. Ships on Google Play.
 

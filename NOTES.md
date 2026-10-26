@@ -219,7 +219,7 @@ Log: bear at 0.77–0.87 for 34 s straight, locked at 14.9 s into the session �
 
 ## 2026-10-24 — App name
 
-- Launcher name is now "Nila" (`app_name`, Hari's call). The camera screen still says "Ghost Radar needs your camera"; the Settings path in the denied text says Nila. The Play listing title can stay "Nila Deha's Ghost Radar".
+- Launcher name is now "Nila" (`app_name`, Hari's call). The camera screen still says "Ghost Radar needs your camera"; the Settings path in the denied text says Nila. The Play listing title can stay "Nila Diha's Ghost Radar".
 
 ## Open questions for Nila
 
