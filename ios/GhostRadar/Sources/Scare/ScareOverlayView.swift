@@ -1,5 +1,6 @@
 import SwiftUI
 import GhostCore
+import os
 
 /// The possessed doll, drawn over the camera preview (must fill exactly the preview's bounds).
 /// At Scaring: the cutout appears exactly where the doll is, its face crossfades to the evil
@@ -35,7 +36,7 @@ struct ScareOverlayView: View {
                     Color.black.opacity(0.55 * overlayAlpha * (0.3 + 0.7 * a))
                     ZStack(alignment: .topLeading) {
                         if let snapshot { Image(decorative: snapshot, scale: 1).resizable().frame(width: cw, height: ch) }
-                        Image("evil_face").resizable().scaledToFit().frame(width: fw, height: fw).offset(x: fx, y: fy).opacity(faceAlpha)
+                        EvilFace.image.resizable().scaledToFit().frame(width: fw, height: fw).offset(x: fx, y: fy).opacity(faceAlpha)
                     }
                     .frame(width: cw, height: ch)
                     .rotationEffect(.degrees(a > 0 && a < 1 ? jitter : 0))
@@ -53,7 +54,8 @@ struct ScareOverlayView: View {
 
     private func react() {
         switch state {
-        case .scaring:
+        case .scaring(let t):
+            Logger(subsystem: "GhostRadar", category: "overlay").info("scaring: box=\(Int(t.box.left)),\(Int(t.box.top)) \(Int(t.box.width))x\(Int(t.box.height)) snapshot=\(snapshot != nil)")
             rise = 0; approach = 0; faceAlpha = 0; overlayAlpha = 1
             withAnimation(.linear(duration: Double(config.faceCrossfadeMs) / 1000)) { faceAlpha = 1 }
             withAnimation(.easeInOut(duration: Double(config.floatUpMs) / 1000)) { rise = 1 }
@@ -64,4 +66,11 @@ struct ScareOverlayView: View {
             overlayAlpha = 0; faceAlpha = 0; rise = 0; approach = 0
         }
     }
+}
+
+/// The evil face PNG, loaded once from the bundle. (`Image("evil_face")` does not resolve a loose
+/// file outside the asset catalogue; `UIImage(contentsOfFile:)` does.)
+enum EvilFace {
+    static let uiImage: UIImage? = Bundle.main.url(forResource: "evil_face", withExtension: "png").flatMap { UIImage(contentsOfFile: $0.path) }
+    static var image: Image { uiImage.map { Image(uiImage: $0) } ?? Image(systemName: "face.dashed") }
 }

@@ -34,7 +34,7 @@ struct AftershockFlashView: View {
     var body: some View {
         ZStack {
             Color.black.opacity(0.85)
-            Image("evil_face").resizable().scaledToFit().padding(.horizontal, 28)
+            EvilFace.image.resizable().scaledToFit().padding(.horizontal, 28)
         }
         .ignoresSafeArea()
     }
