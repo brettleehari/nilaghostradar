@@ -44,7 +44,8 @@ final class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDele
         guard session.canAddOutput(output) else { log.error("cannot add output"); session.commitConfiguration(); return }
         session.addOutput(output)
         if let c = output.connection(with: .video) {
-            if c.isVideoRotationAngleSupported(90) { c.videoRotationAngle = 90 }   // portrait: 480x640 upright
+            if c.isVideoRotationAngleSupported(90) { c.videoRotationAngle = 90; log.info("data output rotated to portrait") }
+            else { log.info("data output cannot rotate; detector will rotate boxes") }
             c.isVideoMirrored = false
         }
         session.commitConfiguration()
@@ -58,14 +59,16 @@ final class CameraController: NSObject, AVCaptureVideoDataOutputSampleBufferDele
         onSampleBuffer?(sampleBuffer, ms)
     }
 
-    /// Crops the latest upright frame. `rect` in image pixels.
+    /// Crops the latest frame, in upright image pixels. A raw landscape buffer is turned upright
+    /// first (90° clockwise), matching what the detector did with its boxes.
     func cutOut(x: Int, y: Int, w: Int, h: Int) -> CGImage? {
         latestLock.lock(); let pb = latestPixelBuffer; latestLock.unlock()
         guard let pb else { return nil }
-        let ci = CIImage(cvPixelBuffer: pb)
+        var ci = CIImage(cvPixelBuffer: pb)
+        if CVPixelBufferGetWidth(pb) > CVPixelBufferGetHeight(pb) { ci = ci.oriented(.right) }
+        let extent = ci.extent
         // CIImage origin is bottom-left; flip y.
-        let height = CGFloat(CVPixelBufferGetHeight(pb))
-        let crop = CGRect(x: CGFloat(x), y: height - CGFloat(y + h), width: CGFloat(w), height: CGFloat(h))
+        let crop = CGRect(x: extent.minX + CGFloat(x), y: extent.minY + extent.height - CGFloat(y + h), width: CGFloat(w), height: CGFloat(h))
         return context.createCGImage(ci, from: crop)
     }
 }
