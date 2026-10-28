@@ -40,6 +40,9 @@ public struct ProximityConfig {
     public var heartbeatFromHeat: Float = 0.55
     public var heartbeatPeriodSlowMs: Float = 950
     public var heartbeatPeriodFastMs: Float = 480
+    /// While Searching, the first time the readout turns HOT the phone whispers "I can see you"; not again within the gap.
+    public var nearWhisper: Bool = true
+    public var nearWhisperGapMs: Int64 = 6_000
     public var traceHeatCap: Float = 0.4
     public var shakeMaxPx: Float = 14
     public var joltAtLock: Bool = true

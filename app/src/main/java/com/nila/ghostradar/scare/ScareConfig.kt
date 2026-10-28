@@ -38,7 +38,7 @@ data class ScareConfig(
     val aftershockAtMs: Long = 2_000L,
     val aftershockFlashMs: Long = 90L,
     val aftershockRumbleMs: Long = 90L,
-    /** Spoken by the phone the moment it locks, before the bang. Empty disables it. */
+    /** What the phone whispers the moment it locks, before the bang (Nila's recording). Empty disables it. */
     val voiceLine: String = "Bloody Mary",
     /** The scare waits for the voice line at most this long. */
     val voiceMaxHoldMs: Long = 1_500L,

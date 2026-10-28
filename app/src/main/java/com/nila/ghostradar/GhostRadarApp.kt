@@ -2,6 +2,7 @@ package com.nila.ghostradar
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.SystemClock
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
@@ -21,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,11 +45,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import com.nila.ghostradar.audio.AmbientAudio
 import com.nila.ghostradar.audio.ScareAudio
-import com.nila.ghostradar.audio.VoiceLine
+import com.nila.ghostradar.audio.VoiceClip
 import com.nila.ghostradar.camera.CameraView
 import com.nila.ghostradar.camera.ResultsOverlay
 import com.nila.ghostradar.detection.DetectionFrame
 import com.nila.ghostradar.detection.DetectionLogger
+import com.nila.ghostradar.detection.SoulHeat
 import com.nila.ghostradar.haptics.ScareHaptics
 import com.nila.ghostradar.radar.AftershockFlash
 import com.nila.ghostradar.radar.RadarScreen
@@ -129,16 +132,21 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         ScareAudio(context, SCARE_TRACKS, onFinished = viewModel::onAudioFinished)
     }
     val ambience = remember { AmbientAudio(context, AMBIENCE_LOOPS) }
-    val voice = remember { VoiceLine(context) }
+    // Nila's two lines: "Bloody Mary" at a haunted lock, "I can see you" when the radar first turns HOT.
+    val lockVoice = remember { VoiceClip(context, VOICE_LOCK, "Bloody Mary") }
+    val nearVoice = remember { VoiceClip(context, VOICE_NEAR, "I can see you") }
 
     // Preload during the radar phase; release with the screen.
     DisposableEffect(audio) {
         audio.preload()
         ambience.preload()
+        lockVoice.preload()
+        nearVoice.preload()
         onDispose {
             audio.release()
             ambience.release()
-            voice.release()
+            lockVoice.release()
+            nearVoice.release()
             haptics.stop()
         }
     }
@@ -152,20 +160,21 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     // Keyed on the class and on the haunted flag, so a faint trace that wakes up fires the lock effects.
     LaunchedEffect(state::class, (state as? GhostState.Locked)?.haunted) {
         when (state) {
-            GhostState.Searching -> { haptics.stop(); audio.stop(); voice.stop(); ambience.play() }
+            GhostState.Searching -> { haptics.stop(); audio.stop(); lockVoice.stop(); ambience.play() }
             is GhostState.Locked -> {
                 val s = state as GhostState.Locked
                 val line = viewModel.config.voiceLine
                 if (s.haunted && line.isNotBlank()) {
                     ambience.pause()
+                    nearVoice.stop()
                     if (viewModel.proximity.joltAtLock) haptics.jolt()
-                    voice.speak(line, onDone = viewModel::onVoiceLineDone)
+                    lockVoice.play(onDone = viewModel::onVoiceLineDone)
                 } else {
                     viewModel.onVoiceLineDone()
                 }
             }
-            is GhostState.Scaring -> { ambience.pause(); haptics.scare(); audio.play() }
-            is GhostState.Cooldown -> { haptics.stop(); voice.stop() }
+            is GhostState.Scaring -> { ambience.pause(); nearVoice.stop(); haptics.scare(); audio.play() }
+            is GhostState.Cooldown -> { haptics.stop(); lockVoice.stop() }
         }
     }
 
@@ -199,6 +208,17 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     LaunchedEffect(heat) {
         ambience.setTempo(prox.tempo(heat))
         ambience.setVolume(prox.ambienceVolume(heat))
+    }
+    // "I can see you" the moment the readout turns HOT while still searching. A faint trace that
+    // follows lets it finish (there, but not awake); a haunted lock cuts it for "Bloody Mary".
+    val hot = SoulHeat.band(heat) == SoulHeat.Band.HOT
+    var lastNearMs by remember { mutableLongStateOf(-prox.nearWhisperGapMs) }
+    LaunchedEffect(hot) {
+        if (!hot || !prox.nearWhisper || viewModel.state.value !is GhostState.Searching) return@LaunchedEffect
+        val now = SystemClock.uptimeMillis()
+        if (now - lastNearMs < prox.nearWhisperGapMs) return@LaunchedEffect
+        lastNearMs = now
+        nearVoice.play()
     }
     LaunchedEffect(Unit) {
         while (true) {
@@ -310,6 +330,10 @@ private val AMBIENCE_LOOPS = listOf(R.raw.radar_ambience, R.raw.radar_ambience_2
 
 /** Stingers; one is picked at random per scare. Same names in the private override slots replace them. */
 private val SCARE_TRACKS = listOf(R.raw.scare_track, R.raw.scare_track_2, R.raw.scare_track_3)
+
+/** Nila's voice: whispered at a haunted lock, and the first time the radar turns HOT. */
+private val VOICE_LOCK = R.raw.voice_bloody_mary
+private val VOICE_NEAR = R.raw.voice_i_can_see_you
 
 /** Debug flags. CPU delegate is the v1 default. */
 private const val USE_GPU_DELEGATE = false

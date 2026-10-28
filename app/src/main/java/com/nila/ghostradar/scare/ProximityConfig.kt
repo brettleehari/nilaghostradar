@@ -21,6 +21,10 @@ data class ProximityConfig(
     val heartbeatFromHeat: Float = 0.55f,
     val heartbeatPeriodSlowMs: Long = 950L,
     val heartbeatPeriodFastMs: Long = 480L,
+    /** While Searching, the first time the readout turns HOT the phone whispers "I can see you" (Nila's recording). */
+    val nearWhisper: Boolean = true,
+    /** Not again within this many ms, so sweeping back and forth over a toy does not loop it. */
+    val nearWhisperGapMs: Long = 6_000L,
     /** On a faint-trace lock the heat is capped here, so HOT settles back to WARM: it is there, but not awake. */
     val traceHeatCap: Float = 0.4f,
     /** After a scare the dish shakes by up to this many pixels, settling as the heat cools. */
