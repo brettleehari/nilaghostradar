@@ -19,24 +19,26 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Owns the gate, the state machine and the two timers (scare length, cooldown max).
- * Feed it every [DetectionFrame] from the camera; render from [state].
+ * Owns the gate, the state machine, the [HuntSequence] clock and the two timers (scare length,
+ * cooldown max). Feed it every [DetectionFrame] from the camera; render from [state].
+ *
+ * A lock starts unhaunted: the hunt screen plays "I can see you" and calls [onNearLineDone]; if the
+ * toy is still in view then, the lock wakes up (haunted), the screen says "Bloody Mary", and the
+ * scare fires [HuntSequence.bangAfterLineMs] later. Nothing can lock in the first
+ * [HuntSequence.noLockAfterOpenMs] of a hunt or for [HuntSequence.noLockAfterScareMs] after a scare.
  */
 class GhostViewModel(
     private val gate: DetectionGate = DetectionGate(),
     val config: ScareConfig = ScareConfig(),
-    private val policyConfig: HauntPolicy.Config = HauntPolicy.Config(),
-    private val policy: HauntPolicy = HauntPolicy(policyConfig),
+    val sequence: HuntSequence = HuntSequence(),
     private val scanner: SoulScanner = SoulScanner(),
     private val heatMeter: SoulHeat = SoulHeat(),
     val proximity: ProximityConfig = ProximityConfig(),
 ) : ViewModel() {
 
-    private val machine = GhostStateMachine(decideHaunted = { policy.decide(SystemClock.uptimeMillis()) })
+    // Every lock starts unhaunted; onNearLineDone wakes it up.
+    private val machine = GhostStateMachine(decideHaunted = { false })
 
-    init {
-        policy.startSession(SystemClock.uptimeMillis())
-    }
     private val _state = MutableStateFlow<GhostState>(GhostState.Searching)
     val state: StateFlow<GhostState> = _state.asStateFlow()
 
@@ -55,7 +57,7 @@ class GhostViewModel(
     val snapshot: StateFlow<Bitmap?> = _snapshot.asStateFlow()
 
     private val _notice = MutableStateFlow<Notice?>(null)
-    /** The small line on the radar ("FAINT TRACE", "CHAIR · NO SOUL"); null when there is none. */
+    /** The small line on the radar ("SIGNAL FOUND", "CHAIR · NO SOUL"); null when there is none. */
     val notice: StateFlow<Notice?> = _notice.asStateFlow()
     private var noticeTimer: Job? = null
 
@@ -66,34 +68,60 @@ class GhostViewModel(
 
     private var fakeTargetUntilMs = 0L
     private var cooldownStartMs = 0L
-    /** When the current lock was last judged; a held faint trace is re-rolled every rerollMs. */
-    private var lastDecisionMs = 0L
     private var voiceHoldUntilMs = 0L
+    /** The gate is fed nothing until this uptime: step 1 after opening, step 4 after a scare. */
+    private var noLockUntilMs = 0L
+    private var pausedAtMs = Long.MIN_VALUE
+
+    init {
+        startHunt(SystemClock.uptimeMillis())
+    }
+
+    private fun startHunt(nowMs: Long) {
+        noLockUntilMs = nowMs + sequence.noLockAfterOpenMs
+        Log.i("GhostRadar", "hunt started: no lock for ${sequence.noLockAfterOpenMs} ms")
+    }
 
     /** Hunt screen left the foreground (home, screen off, another app). */
     fun onHuntPaused() {
-        policy.onPaused(SystemClock.uptimeMillis())
+        pausedAtMs = SystemClock.uptimeMillis()
     }
 
-    /** Hunt screen is back. A long absence starts a fresh session (see [HauntPolicy]). */
+    /** Hunt screen is back. Away for [HuntSequence.sessionResetAfterMs] or longer restarts the hunt. */
     fun onHuntResumed() {
-        if (policy.onResumed(SystemClock.uptimeMillis())) {
-            scanner.reset()
-            Log.i("GhostRadar", "session restarted after a long absence")
-        }
+        val now = SystemClock.uptimeMillis()
+        val away = if (pausedAtMs == Long.MIN_VALUE) 0L else now - pausedAtMs
+        pausedAtMs = Long.MIN_VALUE
+        if (away < sequence.sessionResetAfterMs) return
+        scanner.reset()
+        startHunt(now)
+        Log.i("GhostRadar", "hunt restarted after a long absence")
     }
 
-    /** The UI calls this when the voice line has finished (or could not play). */
+    /** The UI calls this when "Bloody Mary" has finished (or could not play). */
     fun onVoiceLineDone() {
         voiceHoldUntilMs = 0L
     }
 
     /**
-     * Debug/tuning aid: pretend a teddy bear sits in the middle of the frame for [durationMs].
-     * Lets Hari and Nila see the whole scare without the doll.
+     * The UI calls this when "I can see you" has finished (or could not play). If the toy is still
+     * locked, it wakes up: the lock turns haunted and the scare follows.
      */
-    fun injectFakeTarget(durationMs: Long = 3_000L) {
-        policy.forceNextHaunt()
+    fun onNearLineDone() {
+        val before = _state.value
+        if (before !is GhostState.Locked || before.haunted) return
+        val after = machine.wakeUp()
+        _state.value = after
+        onTransition(before, after)
+        Log.i("GhostRadar", "still in view at the end of the line: haunted")
+    }
+
+    /**
+     * Debug/tuning aid: pretend a teddy bear sits in the middle of the frame for [durationMs],
+     * ignoring the no-lock windows. Lets Hari and Nila see the whole scare without the doll.
+     */
+    fun injectFakeTarget(durationMs: Long = 10_000L) {
+        noLockUntilMs = 0L
         // Frame timestamps are uptimeMillis, so the deadline can be too.
         fakeTargetUntilMs = SystemClock.uptimeMillis() + durationMs
         Log.i("GhostRadar", "debug: fake target injected for $durationMs ms")
@@ -103,32 +131,23 @@ class GhostViewModel(
         latestImage = image
         val frame = if (rawFrame.timestampMs < fakeTargetUntilMs) rawFrame.withFakeBear() else rawFrame
         _lastFrame.value = frame
-        val out = gate.onFrame(frame.objects, frame.timestampMs)
+        val now = SystemClock.uptimeMillis()
+        // Steps 1 and 4: the radar still warms, but nothing can lock.
+        val canLock = now >= noLockUntilMs
+        val out = gate.onFrame(if (canLock) frame.objects else emptyList(), frame.timestampMs)
         val target = out.target?.toTarget(frame.imageWidth, frame.imageHeight)
         val before = _state.value
-        val hold = SystemClock.uptimeMillis() < voiceHoldUntilMs
-        var after = machine.onGate(out, target, holdScare = hold)
-        val now = SystemClock.uptimeMillis()
-        if (before !is GhostState.Locked && after is GhostState.Locked) lastDecisionMs = now
-        if (after is GhostState.Locked && !after.haunted && now - lastDecisionMs >= policyConfig.rerollMs) {
-            lastDecisionMs = now
-            if (policy.decide(now)) {
-                after = machine.wakeUp()
-                Log.i("GhostRadar", "faint trace re-rolled: haunted")
-            } else {
-                Log.i("GhostRadar", "faint trace re-rolled: still faint")
-            }
-        }
+        val hold = now < voiceHoldUntilMs
+        val after = machine.onGate(out, target, holdScare = hold)
         _state.value = after
         onTransition(before, after)
         val measured = heatMeter.onFrame(frame.objects, frame.imageHeight)
         _heat.value = when {
             after is GhostState.Locked && after.haunted -> 1f
-            after is GhostState.Locked -> minOf(measured, proximity.traceHeatCap)
             after is GhostState.Scaring -> 1f
             // Aftermath: the radar comes back red and cools to green over the cooldown.
             after is GhostState.Cooldown ->
-                (1f - (SystemClock.uptimeMillis() - cooldownStartMs).toFloat() / config.cooldownMaxMs).coerceIn(0f, 1f)
+                (1f - (now - cooldownStartMs).toFloat() / config.cooldownMaxMs).coerceIn(0f, 1f)
             else -> measured
         }
         if (after is GhostState.Searching) {
@@ -136,7 +155,7 @@ class GhostViewModel(
         }
     }
 
-    /** A faint trace stays up for the whole lock; everything else clears after [ScareConfig.noticeMs]. */
+    /** The found notice stays up for the whole lock; everything else clears after [ScareConfig.noticeMs]. */
     private fun show(n: Notice) {
         Log.i("GhostRadar", "notice: $n")
         _notice.value = n
@@ -161,12 +180,10 @@ class GhostViewModel(
         }
         val newLock = before !is GhostState.Locked && after is GhostState.Locked
         val wokeUp = before is GhostState.Locked && !before.haunted && after is GhostState.Locked && after.haunted
-        if (newLock || wokeUp) {
-            val a = after as GhostState.Locked
-            voiceHoldUntilMs = if (!a.haunted || config.voiceLine.isBlank()) 0L
-            else SystemClock.uptimeMillis() + config.voiceMaxHoldMs
-            if (!a.haunted) show(Notice.FaintTrace(++noticeCount))
-            else if (_notice.value is Notice.FaintTrace) _notice.value = null
+        if (newLock) show(Notice.FaintTrace(++noticeCount))
+        if (wokeUp) {
+            _notice.value = null
+            voiceHoldUntilMs = if (config.voiceLine.isBlank()) 0L else SystemClock.uptimeMillis() + sequence.bangAfterLineMs
         }
         if (before !is GhostState.Scaring && after is GhostState.Scaring) {
             _snapshot.value = latestImage?.let { cutOut(it, after.target.box, config.cutoutMarginFraction) }
@@ -188,6 +205,11 @@ class GhostViewModel(
                 delay(config.cooldownMaxMs)
                 finishCooldown()
             }
+        }
+        if (before is GhostState.Cooldown && after is GhostState.Searching) {
+            // Step 4: cool off.
+            noLockUntilMs = SystemClock.uptimeMillis() + sequence.noLockAfterScareMs
+            Log.i("GhostRadar", "cooling off: no lock for ${sequence.noLockAfterScareMs} ms")
         }
     }
 

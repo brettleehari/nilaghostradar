@@ -38,10 +38,8 @@ data class ScareConfig(
     val aftershockAtMs: Long = 2_000L,
     val aftershockFlashMs: Long = 90L,
     val aftershockRumbleMs: Long = 90L,
-    /** What the phone whispers the moment it locks, before the bang (Nila's recording). Empty disables it. */
+    /** What the phone says when the toy wakes up, before the bang (Nila's recording). Empty disables it. The timing is in [HuntSequence]. */
     val voiceLine: String = "Bloody Mary",
-    /** The scare waits for the voice line at most this long. */
-    val voiceMaxHoldMs: Long = 1_500L,
     /** How long a radar notice ("FAINT TRACE", "CHAIR · NO SOUL") stays on screen. */
     val noticeMs: Long = 2_500L,
 ) {

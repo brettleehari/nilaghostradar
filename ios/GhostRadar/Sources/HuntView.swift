@@ -12,10 +12,9 @@ struct HuntView: View {
     @State private var haptics = ScareHaptics()
     @State private var audio: ScareAudio?
     @State private var ambience: AmbientAudio?
-    // Nila's two lines: "Bloody Mary" at a haunted lock, "I can see you" when the radar first turns HOT.
+    // Nila's two lines: "I can see you" when a toy is found, "Bloody Mary" when it wakes up.
     @State private var lockVoice = VoiceClip(resource: "voice_bloody_mary", says: "Bloody Mary")
     @State private var nearVoice = VoiceClip(resource: "voice_i_can_see_you", says: "I can see you")
-    @State private var lastNearMs: Int64 = 0
     @State private var blackout = false
     @State private var aftershock = false
 
@@ -57,7 +56,6 @@ struct HuntView: View {
         }
         .onChange(of: vm.state.kind) { _, _ in onStateChanged() }
         .onChange(of: vm.heat) { _, h in ambience?.setTempo(vm.proximity.tempo(h)); ambience?.setVolume(vm.proximity.ambienceVolume(h)) }
-        .onChange(of: SoulHeat.band(vm.heat) == .hot) { _, hot in if hot { onHot() } }
         .task { await tickLoop() }
     }
 
@@ -91,38 +89,31 @@ struct HuntView: View {
         camera.stop(); audio?.release(); ambience?.release(); lockVoice.stop(); nearVoice.stop(); haptics.stop()
     }
 
-    /// Side effects on state entry, like the Android LaunchedEffect.
+    /// Side effects on state entry (the HuntSequence steps), like the Android LaunchedEffect.
     private func onStateChanged() {
         switch vm.state {
         case .searching:
-            haptics.stop(); audio?.stop(); lockVoice.stop(); ambience?.play()
+            // The toy left (or the scare is over): any line stops with it.
+            haptics.stop(); audio?.stop(); nearVoice.stop(); lockVoice.stop(); ambience?.play()
             blackout = false; aftershock = false
         case .locked(_, let haunted):
-            if haunted && !vm.config.voiceLine.isEmpty {
+            if !haunted {
+                // Step 2: found. "I can see you" once in full; the view model decides at its end.
+                if vm.sequence.nearLine { nearVoice.play { vm.onNearLineDone() } } else { vm.onNearLineDone() }
+            } else if !vm.config.voiceLine.isEmpty {
+                // Step 3: still here. Jolt, "Bloody Mary", and the bang bangAfterLineMs later.
                 ambience?.pause()
-                nearVoice.stop()
                 if vm.proximity.joltAtLock { haptics.jolt() }
                 lockVoice.play { vm.onVoiceLineDone() }
             } else {
                 vm.onVoiceLineDone()
             }
         case .scaring:
-            ambience?.pause(); nearVoice.stop(); haptics.scare(); audio?.play()
+            ambience?.pause(); haptics.scare(); audio?.play()
         case .cooldown:
             haptics.stop(); lockVoice.stop()
             Task { await aftermath() }
         }
-    }
-
-    /// "I can see you" the moment the readout turns HOT while still searching. A faint trace that
-    /// follows lets it finish (there, but not awake); a haunted lock cuts it for "Bloody Mary".
-    private func onHot() {
-        let prox = vm.proximity
-        guard prox.nearWhisper, vm.state.isSearching else { return }
-        let now = GhostViewModel.now()
-        guard now - lastNearMs >= prox.nearWhisperGapMs else { return }
-        lastNearMs = now
-        nearVoice.play()
     }
 
     private func aftermath() async {

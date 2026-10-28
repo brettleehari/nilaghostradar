@@ -20,23 +20,22 @@ The same app for iPhone lives in `ios/` (Swift, SwiftUI, same model and numbers)
 
 ## How a hunt works
 
-1. Open the app. The radar sweeps and says SEARCHING…. That is the start of a **session**.
-2. Point the phone around the room. The radar is green, breathes slowly and says COLD. Things the
-   camera recognises get a small readout: `CHAIR · NO SOUL`, `BED · NO SOUL`. Nothing else happens.
-3. Point toward a doll or a teddy. Find My style, the radar warms as you get closer: green turns
-   amber then red, COLD becomes WARM then HOT, the rings breathe faster, the phone ticks faster and
-   the music speeds up. The arrow swings to the toy, and as it turns HOT a voice whispers
-   "I can see you". At the lock, one of two things:
-   - most of the time a small `FAINT TRACE · NO ANSWER` note appears and that is all;
-   - now and then the radar goes red and says HERE, the phone jolts, the voice says "Bloody Mary",
-     one of three stingers bangs, and the doll lunges.
-4. After the lunge the screen cuts to black static, SIGNAL LOST. The radar comes back red and
-   shaking, says GONE, and cools to green; two seconds in, the face flashes once with a thump.
-5. Point away and everything is normal again. The phone never shows the doll "normal" itself;
-   the kid has to look up at the real one.
+The sequence is Hari's (2026-10-28). Every number lives in one table, `HuntSequence`
+(`app/src/main/java/com/nila/ghostradar/scare/HuntSequence.kt` and `ios/GhostCore/Sources/GhostCore/Configs.swift`);
+change both together.
 
-What decides which toys are haunted (`HauntPolicy.Config`): nothing in the first 15 s of a session,
-at least 45 s between scares, then about 3 in 10 locks, and never more than three faint traces in a
-row. Holding on a toy that gave a faint trace rolls the dice again every 10 s, so patience
-wakes it. A session is one hunt: leaving the app for a minute or more starts a fresh one; a short
-interruption (a call, the screen going off briefly) does not.
+| Step | What happens | Setting | Default |
+|---|---|---|---|
+| 1 | The radar sweeps, SEARCHING…. Things it recognises get a `CHAIR · NO SOUL` readout. Pointing at a toy warms the radar (green → amber → red, COLD → WARM → HOT, faster ticks, faster music) but **nothing can lock** yet. | `noLockAfterOpenMs` | 10 s |
+| 2 | A toy is found: lock, `SIGNAL FOUND · LISTENING`, and a voice says "I can see you" once in full. | `nearLine` | on |
+| 3 | At the end of the line, if the toy is still in view: the radar goes red and says HERE, the phone jolts, the voice says "Bloody Mary", and the lunge and one of three stingers fire this long after the line starts. If the toy left during the line, nothing happens and the hunt goes on. | `bangAfterLineMs` | 1.5 s |
+| 4 | After the lunge the screen cuts to black static, SIGNAL LOST; the radar comes back red and shaking, says GONE, cools to green; two seconds in, the face flashes once with a thump. The cooldown ends with the stinger (max 8 s). | `ScareConfig` | — |
+| 5 | Cool off: **nothing can lock** again for this long. | `noLockAfterScareMs` | 10 s |
+| — | Leaving the app this long restarts the hunt at step 1; a short interruption (a call, the screen going off briefly) does not. | `sessionResetAfterMs` | 60 s |
+
+"Still in view" is the detection gate's rule: the toy has been seen within the last 500 ms. Point
+away and everything is normal again; the phone never shows the doll "normal" itself, the kid has to
+look up at the real one.
+
+The earlier rarity rules (`HauntPolicy`: warm-up, 45 s gap, 3 in 10 locks, re-roll) are still in the
+code and tested but no longer wired in.

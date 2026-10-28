@@ -19,11 +19,33 @@ public struct ScareConfig {
     public var aftershockAtMs: Int64 = 2_000
     public var aftershockFlashMs: Int64 = 90
     public var aftershockRumbleMs: Int64 = 90
+    /// What the phone says when the toy wakes up, before the bang. Empty disables it. Timing is in `HuntSequence`.
     public var voiceLine: String = "Bloody Mary"
-    public var voiceMaxHoldMs: Int64 = 1_500
     public var noticeMs: Int64 = 2_500
     public init() {}
     public var scareDurationMs: Int64 { Int64(floatUpMs + approachMs + holdMs) }
+}
+
+/// The hunt, step by step, every number in one place (Hari, 2026-10-28). Same table as the Android
+/// `HuntSequence` and README.md; change them together.
+///
+/// | Step | Setting | Default |
+/// |---|---|---|
+/// | 1. After the hunt opens (or restarts), nothing can lock for | `noLockAfterOpenMs` | 10 s |
+/// | 2. A toy is found (lock): "I can see you" plays once in full | `nearLine` | on |
+/// | 3. At the end of the line, if the toy is still in view: it wakes, says "Bloody Mary" | — | — |
+/// |    and the lunge + stinger fire this long after the line starts | `bangAfterLineMs` | 1.5 s |
+/// |    (if the toy left during the line, nothing happens and the hunt goes on) | `scareOnlyIfStillSeen` | on |
+/// | 4. After the scare has played out, nothing can lock for | `noLockAfterScareMs` | 10 s |
+/// | Leaving the app this long restarts the hunt (step 1 again) | `sessionResetAfterMs` | 60 s |
+public struct HuntSequence {
+    public var noLockAfterOpenMs: Int64 = 10_000
+    public var nearLine: Bool = true
+    public var scareOnlyIfStillSeen: Bool = true
+    public var bangAfterLineMs: Int64 = 1_500
+    public var noLockAfterScareMs: Int64 = 10_000
+    public var sessionResetAfterMs: Int64 = 60_000
+    public init() {}
 }
 
 /// Every number for the warmer/colder feel.
@@ -40,10 +62,6 @@ public struct ProximityConfig {
     public var heartbeatFromHeat: Float = 0.55
     public var heartbeatPeriodSlowMs: Float = 950
     public var heartbeatPeriodFastMs: Float = 480
-    /// While Searching, the first time the readout turns HOT the phone whispers "I can see you"; not again within the gap.
-    public var nearWhisper: Bool = true
-    public var nearWhisperGapMs: Int64 = 6_000
-    public var traceHeatCap: Float = 0.4
     public var shakeMaxPx: Float = 14
     public var joltAtLock: Bool = true
     public var tempoMaxSpeed: Float = 1.6

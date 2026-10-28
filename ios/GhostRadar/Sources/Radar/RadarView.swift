@@ -113,7 +113,7 @@ private struct HeatReadout: View {
     }
 }
 
-/// A small pill under the readout: "FAINT TRACE · NO ANSWER", "CHAIR · NO SOUL". PLACEHOLDER copy.
+/// A small pill under the readout: "SIGNAL FOUND · LISTENING", "CHAIR · NO SOUL". PLACEHOLDER copy.
 private struct RadarNotice: View {
     let notice: Notice?; let colour: Color
     var body: some View {
@@ -131,7 +131,7 @@ private struct RadarNotice: View {
     }
     private func text(_ n: Notice) -> String {
         switch n {
-        case .faintTrace: return "FAINT TRACE · NO ANSWER"
+        case .faintTrace: return "SIGNAL FOUND · LISTENING"
         case .noSoul(let label, _): return "\(label.uppercased()) · NO SOUL"
         }
     }

@@ -234,17 +234,27 @@ Log: bear at 0.77–0.87 for 34 s straight, locked at 14.9 s into the session �
 
 - Two recordings from Nila, both now in the app on Android and iOS, trimmed and faded, nothing else done to them (they were already at full scale from WhatsApp):
   - "Bloody Mary, Bloody Mary" (`voice_bloody_mary.wav`, 3.3 s) replaces the phone's text-to-speech at a haunted lock. `VoiceLine` (TTS on Android, AVSpeechSynthesizer on iOS) is gone; `VoiceClip` preloads one clip and reports when it ends, so the scare still waits for the line (max `voiceMaxHoldMs`, 1.5 s, so the bang lands about halfway through her line — change that number if she wants the whole line first).
-  - "I can see you" (`voice_i_can_see_you.wav`, 4.6 s) is Hari's "whenever we near the ghost": it plays the moment the readout turns HOT while still Searching, not again within `ProximityConfig.nearWhisperGapMs` (6 s). A faint trace that follows lets it finish (there, but not awake); a haunted lock stops it and says Bloody Mary; a scare stops it.
+  - "I can see you" (`voice_i_can_see_you.wav`, 4.6 s) is Hari's "whenever we near the ghost": it plays when a toy is found but not awake, meaning the readout turns HOT while still Searching or a faint-trace lock happens, whichever comes first, not again within `ProximityConfig.nearWhisperGapMs` (6 s). A haunted lock stops it and says Bloody Mary; a scare stops it. (First cut fired on HOT only; on the iPhone the gate locked before the heat reached HOT, so a faint trace got no whisper. Fixed the same day.)
 - Source files kept in `~/Desktop/GhostRadar/nila_voice/` (the original `.opus` notes and the converted WAVs). Listed in ASSETS.md as project-owned, recorded by Nila.
-- Tested: Android debug build on the Moto g (install + launch); iOS debug build on the iPhone. Nila and Hari to judge the levels and whether "I can see you" should fire on HOT or only on a faint trace.
+- Tested with the teddy on both phones, logs read from the Mac. Moto g: whisper → faint trace (warm-up) → re-roll haunted at 10 s → Bloody Mary → lunge 1.5 s later → stinger → cooldown → searching; no errors in the process log. iPhone 17 Pro Max: same sequence (this time the camera delivered portrait frames; both paths work), Locked → Scaring 1.46 s, Scaring → Cooldown 1.77 s, stinger ends 7 s in. Only noise: AVAudioSession "hang risk" warnings from preparing eight players on the main thread at start, and Fig -12710 from the camera; neither visible.
+- Hari asked why it takes so long after a lock: it is the haunt policy (15 s warm-up, 45 s gap, 3 in 10, 10 s re-roll) plus the 1.5 s voice hold, not the detector. Numbers unchanged pending his call.
 
-## Open questions for Nila
+## 2026-10-28 — Hari's sequence replaces the rarity rules (`HuntSequence`)
+
+Hari watched both phones hold a faint trace for 15 s and set the sequence himself: "first 10 seconds dont lock. Then if you find the object first play the i can see you and at the end of the song if you can still see the object lock and scare with the bloody mary. Then cool off for next 10 seconds. Keep this as a table for handy changes."
+
+- `HuntSequence` (Android `scare/HuntSequence.kt`, iOS `Configs.swift`) is that table: `noLockAfterOpenMs` 10 s, `nearLine` on, `bangAfterLineMs` 1.5 s, `noLockAfterScareMs` 10 s, `sessionResetAfterMs` 60 s. README "How a hunt works" is the same table.
+- Mechanics: during the no-lock windows the gate is fed nothing (the radar still warms, so HOT shows but nothing locks). Every lock starts unhaunted and shows `SIGNAL FOUND · LISTENING` (placeholder copy, was FAINT TRACE · NO ANSWER) while "I can see you" plays; at its end the view model's `onNearLineDone` wakes the lock if the toy is still there (gate rule: seen within 500 ms), which fires the jolt, "Bloody Mary", and the bang 1.5 s in. If the toy leaves during the line, the line stops and the hunt goes on. After the cooldown the no-lock window runs again.
+- Gone from the wiring: `HauntPolicy` (warm-up / 45 s gap / 3 in 10 / guarantee / 10 s re-roll) and the heat cap on a faint trace. The policy class and its tests stay in the repo, unused, in case the rarity comes back. The HOT-while-searching whisper from earlier today is gone too: the line now belongs to the lock.
+- Still a build-up by Nila's rule (about 6 s from lock to bang: 4.6 s line + 1.5 s). Hari's call today; Nila to hear it.
+- Debug long-press now injects the bear for 10 s (was 3 s) so the whole sequence plays, and ignores the no-lock windows.
+
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?
 - Does the song play once or loop? What happens on screen when it ends?
 - Is there an "off" switch or a parent mode to stop the scare?
 - Radar colour: green, or something else? (Placeholder is `#39FF14`.)
-- "I can see you": on turning HOT (now), or only on a faint-trace lock? And should the bang wait for the whole "Bloody Mary" line (set `voiceMaxHoldMs` to ~3.5 s) or cut in at 1.5 s as now?
+- "I can see you": should the bang wait for the whole "Bloody Mary" line (set `voiceMaxHoldMs` to ~3.5 s) or cut in at 1.5 s as now?
 - Camera rationale copy: current placeholder reads "The camera looks for ghosts hiding in toys. Everything happens on this phone. Nothing is recorded, saved, or sent anywhere." OK, or does she want it spookier?
 - Launcher icon: the current one is a placeholder (green rings + sweep). What does she want?
 - Where should the ⓘ (open-source notices) button live? Top-right on every screen for now.

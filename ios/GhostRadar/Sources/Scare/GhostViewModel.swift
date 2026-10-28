@@ -3,8 +3,13 @@ import CoreGraphics
 import GhostCore
 import os
 
-/// Owns the gate, the state machine, the haunt policy, the heat meter and the timers.
+/// Owns the gate, the state machine, the `HuntSequence` clock, the heat meter and the timers.
 /// Feed it every DetectionFrame from the camera; render from its published state.
+///
+/// A lock starts unhaunted: the hunt screen plays "I can see you" and calls `onNearLineDone`; if the
+/// toy is still in view then, the lock wakes up (haunted), the screen says "Bloody Mary", and the
+/// scare fires `bangAfterLineMs` later. Nothing can lock in the first `noLockAfterOpenMs` of a hunt
+/// or for `noLockAfterScareMs` after a scare.
 @MainActor
 final class GhostViewModel: ObservableObject {
     @Published private(set) var state: GhostState = .searching
@@ -15,13 +20,13 @@ final class GhostViewModel: ObservableObject {
 
     let config = ScareConfig()
     let proximity = ProximityConfig()
-    let policyConfig = HauntPolicy.Config()
+    let sequence = HuntSequence()
 
     private let gate = DetectionGate()
-    private let policy: HauntPolicy
     private let scanner = SoulScanner()
     private let heatMeter = SoulHeat()
-    private lazy var machine = GhostStateMachine(decideHaunted: { [unowned self] in policy.decide(nowMs: Self.now()) })
+    // Every lock starts unhaunted; onNearLineDone wakes it up.
+    private let machine = GhostStateMachine(decideHaunted: { false })
     private let log = Logger(subsystem: "GhostRadar", category: "ghost")
 
     private var scareTimer: Task<Void, Never>?
@@ -31,27 +36,50 @@ final class GhostViewModel: ObservableObject {
     private var fakeTargetUntilMs: Int64 = 0
     private var voiceHoldUntilMs: Int64 = 0
     private var cooldownStartMs: Int64 = 0
-    private var lastDecisionMs: Int64 = 0
+    /// The gate is fed nothing until this uptime: step 1 after opening, step 4 after a scare.
+    private var noLockUntilMs: Int64 = 0
+    private var pausedAtMs: Int64?
 
     /// Cuts the doll out of the latest camera frame; injected by the hunt screen.
     var cutOut: ((_ x: Int, _ y: Int, _ w: Int, _ h: Int) -> CGImage?)?
 
-    init() {
-        policy = HauntPolicy(config: policyConfig)
-        policy.startSession(nowMs: Self.now())
-    }
+    init() { startHunt(Self.now()) }
 
     static func now() -> Int64 { Int64(ProcessInfo.processInfo.systemUptime * 1000) }
 
-    func onHuntPaused() { policy.onPaused(nowMs: Self.now()) }
-    func onHuntResumed() {
-        if policy.onResumed(nowMs: Self.now()) { scanner.reset(); log.info("session restarted after a long absence") }
+    private func startHunt(_ now: Int64) {
+        noLockUntilMs = now + sequence.noLockAfterOpenMs
+        log.info("hunt started: no lock for \(self.sequence.noLockAfterOpenMs) ms")
     }
+
+    func onHuntPaused() { pausedAtMs = Self.now() }
+    /// Away for `sessionResetAfterMs` or longer restarts the hunt (step 1 again).
+    func onHuntResumed() {
+        let now = Self.now()
+        let away = pausedAtMs.map { now - $0 } ?? 0
+        pausedAtMs = nil
+        guard away >= sequence.sessionResetAfterMs else { return }
+        scanner.reset()
+        startHunt(now)
+        log.info("hunt restarted after a long absence")
+    }
+    /// "Bloody Mary" has finished (or could not play).
     func onVoiceLineDone() { voiceHoldUntilMs = 0 }
 
-    /// Debug: a teddy bear in the middle of the frame for `durationMs`, forced haunted.
-    func injectFakeTarget(durationMs: Int64 = 3_000) {
-        policy.forceNextHaunt()
+    /// "I can see you" has finished (or could not play). If the toy is still locked, it wakes up:
+    /// the lock turns haunted and the scare follows.
+    func onNearLineDone() {
+        let before = state
+        guard before.isFaintTrace else { return }
+        let after = machine.wakeUp()
+        state = after
+        onTransition(before, after)
+        log.info("still in view at the end of the line: haunted")
+    }
+
+    /// Debug: a teddy bear in the middle of the frame for `durationMs`, ignoring the no-lock windows.
+    func injectFakeTarget(durationMs: Int64 = 10_000) {
+        noLockUntilMs = 0
         fakeTargetUntilMs = Self.now() + durationMs
         log.info("debug: fake target injected for \(durationMs) ms")
     }
@@ -60,23 +88,19 @@ final class GhostViewModel: ObservableObject {
         let now = Self.now()
         let frame = now < fakeTargetUntilMs ? raw.withFakeBear() : raw
         lastFrame = frame
-        let out = gate.onFrame(frame.objects, nowMs: frame.timestampMs)
+        // Steps 1 and 4: the radar still warms, but nothing can lock.
+        let canLock = now >= noLockUntilMs
+        let out = gate.onFrame(canLock ? frame.objects : [], nowMs: frame.timestampMs)
         let target = out.target.map { Target($0, imageWidth: frame.imageWidth, imageHeight: frame.imageHeight) }
         let before = state
-        var after = machine.onGate(out, target: target, holdScare: now < voiceHoldUntilMs)
-        if !before.isLocked && after.isLocked { lastDecisionMs = now }
-        if after.isFaintTrace && now - lastDecisionMs >= policyConfig.rerollMs {
-            lastDecisionMs = now
-            if policy.decide(nowMs: now) { after = machine.wakeUp(); log.info("faint trace re-rolled: haunted") }
-            else { log.info("faint trace re-rolled: still faint") }
-        }
+        let after = machine.onGate(out, target: target, holdScare: now < voiceHoldUntilMs)
         state = after
         onTransition(before, after)
 
         let measured = heatMeter.onFrame(frame.objects, imageHeight: frame.imageHeight)
         switch after {
         case .locked(_, true), .scaring: heat = 1
-        case .locked(_, false): heat = min(measured, proximity.traceHeatCap)
+        case .locked(_, false): heat = measured
         case .cooldown: heat = min(max(1 - Float(now - cooldownStartMs) / Float(config.cooldownMaxMs), 0), 1)
         case .searching: heat = measured
         }
@@ -107,11 +131,10 @@ final class GhostViewModel: ObservableObject {
         if before.isLocked && !after.isLocked, notice?.isFaintTrace == true { notice = nil }
         let newLock = !before.isLocked && after.isLocked
         let wokeUp = before.isFaintTrace && after.isHauntedLock
-        if newLock || wokeUp {
-            let haunted = after.isHauntedLock
-            voiceHoldUntilMs = (!haunted || config.voiceLine.isEmpty) ? 0 : Self.now() + config.voiceMaxHoldMs
-            if !haunted { noticeCount += 1; show(.faintTrace(id: noticeCount)) }
-            else if notice?.isFaintTrace == true { notice = nil }
+        if newLock { noticeCount += 1; show(.faintTrace(id: noticeCount)) }
+        if wokeUp {
+            notice = nil
+            voiceHoldUntilMs = config.voiceLine.isEmpty ? 0 : Self.now() + sequence.bangAfterLineMs
         }
         if !before.isScaring, case .scaring(let t) = after {
             if let r = cutoutRect(box: t.box, margin: config.cutoutMarginFraction, imageWidth: t.imageWidth, imageHeight: t.imageHeight) {
@@ -139,6 +162,11 @@ final class GhostViewModel: ObservableObject {
                 self.finishCooldown()
             }
         }
+        if before.isCooldown && after.isSearching {
+            // Step 4: cool off.
+            noLockUntilMs = Self.now() + sequence.noLockAfterScareMs
+            log.info("cooling off: no lock for \(self.sequence.noLockAfterScareMs) ms")
+        }
         if before.kind != after.kind { log.info("state: \(before.kind, privacy: .public) -> \(after.kind, privacy: .public)") }
     }
 
@@ -155,7 +183,7 @@ extension GhostState {
     var kind: String {
         switch self {
         case .searching: return "Searching"
-        case .locked(_, let h): return h ? "Locked" : "Locked(trace)"
+        case .locked(_, let h): return h ? "Locked" : "Locked(found)"
         case .scaring: return "Scaring"
         case .cooldown: return "Cooldown"
         }

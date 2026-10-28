@@ -24,7 +24,7 @@ import com.nila.ghostradar.scare.Notice
 import com.nila.ghostradar.ui.theme.RadarGreen
 
 /**
- * A small pill under the readout: "FAINT TRACE · NO ANSWER", "CHAIR · NO SOUL". Fixed-height slot
+ * A small pill under the readout: "SIGNAL FOUND · LISTENING", "CHAIR · NO SOUL". Fixed-height slot
  * so the radar never jumps; each notice slides in, sits for ScareConfig.noticeMs, fades out.
  * PLACEHOLDER copy and style; Nila decides (open question in NOTES.md).
  */

@@ -11,7 +11,7 @@
     <string name="radar_searching">SEARCHING…</string>
     <string name="radar_locked">SIGNAL LOCKED</string>
     <!-- Small notice under the readout. -->
-    <string name="notice_trace">FAINT TRACE · NO ANSWER</string>
+    <string name="notice_trace">SIGNAL FOUND · LISTENING</string>
     <string name="notice_no_soul">%1$s · NO SOUL</string>
     <string name="radar_scaring">IT SEES YOU</string>
     <string name="radar_cooldown">SIGNAL LOST</string>

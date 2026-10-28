@@ -35,6 +35,11 @@ final class VoiceClip: NSObject, AVAudioPlayerDelegate {
         p.play()
     }
 
+    /// Runs `cb` when the clip that is playing ends; at once if nothing is playing.
+    func onFinished(_ cb: @escaping () -> Void) {
+        if isPlaying { pendingDone = cb } else { cb() }
+    }
+
     func stop() {
         pendingDone = nil
         if let p = player, p.isPlaying { p.stop(); p.currentTime = 0 }

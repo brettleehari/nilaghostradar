@@ -2,7 +2,6 @@ package com.nila.ghostradar
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.SystemClock
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.animateFloatAsState
@@ -22,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -50,7 +48,6 @@ import com.nila.ghostradar.camera.CameraView
 import com.nila.ghostradar.camera.ResultsOverlay
 import com.nila.ghostradar.detection.DetectionFrame
 import com.nila.ghostradar.detection.DetectionLogger
-import com.nila.ghostradar.detection.SoulHeat
 import com.nila.ghostradar.haptics.ScareHaptics
 import com.nila.ghostradar.radar.AftershockFlash
 import com.nila.ghostradar.radar.RadarScreen
@@ -132,7 +129,7 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         ScareAudio(context, SCARE_TRACKS, onFinished = viewModel::onAudioFinished)
     }
     val ambience = remember { AmbientAudio(context, AMBIENCE_LOOPS) }
-    // Nila's two lines: "Bloody Mary" at a haunted lock, "I can see you" when the radar first turns HOT.
+    // Nila's two lines: "I can see you" when a toy is found, "Bloody Mary" when it wakes up.
     val lockVoice = remember { VoiceClip(context, VOICE_LOCK, "Bloody Mary") }
     val nearVoice = remember { VoiceClip(context, VOICE_NEAR, "I can see you") }
 
@@ -155,25 +152,31 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.onHuntPaused() }
     LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.onHuntResumed() }
 
-    // Side effects on state entry. The ambience stops the moment a lock happens so the stinger
-    // lands on silence.
-    // Keyed on the class and on the haunted flag, so a faint trace that wakes up fires the lock effects.
+    val prox = viewModel.proximity
+    val sequence = viewModel.sequence
+
+    // Side effects on state entry (the HuntSequence steps). Keyed on the class and on the haunted
+    // flag, so the wake-up at the end of "I can see you" fires the haunted-lock effects.
     LaunchedEffect(state::class, (state as? GhostState.Locked)?.haunted) {
         when (state) {
-            GhostState.Searching -> { haptics.stop(); audio.stop(); lockVoice.stop(); ambience.play() }
+            // The toy left (or the scare is over): any line stops with it.
+            GhostState.Searching -> { haptics.stop(); audio.stop(); nearVoice.stop(); lockVoice.stop(); ambience.play() }
             is GhostState.Locked -> {
                 val s = state as GhostState.Locked
-                val line = viewModel.config.voiceLine
-                if (s.haunted && line.isNotBlank()) {
+                if (!s.haunted) {
+                    // Step 2: found. "I can see you" once in full; the view model decides at its end.
+                    if (sequence.nearLine) nearVoice.play(onDone = viewModel::onNearLineDone)
+                    else viewModel.onNearLineDone()
+                } else if (viewModel.config.voiceLine.isNotBlank()) {
+                    // Step 3: still here. Jolt, "Bloody Mary", and the bang bangAfterLineMs later.
                     ambience.pause()
-                    nearVoice.stop()
-                    if (viewModel.proximity.joltAtLock) haptics.jolt()
+                    if (prox.joltAtLock) haptics.jolt()
                     lockVoice.play(onDone = viewModel::onVoiceLineDone)
                 } else {
                     viewModel.onVoiceLineDone()
                 }
             }
-            is GhostState.Scaring -> { ambience.pause(); nearVoice.stop(); haptics.scare(); audio.play() }
+            is GhostState.Scaring -> { ambience.pause(); haptics.scare(); audio.play() }
             is GhostState.Cooldown -> { haptics.stop(); lockVoice.stop() }
         }
     }
@@ -204,21 +207,9 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
     // Warmer/colder: music speeds up and swells, and the phone ticks faster, as a toy gets closer;
     // once HOT the ticks become a quickening heartbeat. Only while hunting; the scare owns the
     // motor once it starts.
-    val prox = viewModel.proximity
     LaunchedEffect(heat) {
         ambience.setTempo(prox.tempo(heat))
         ambience.setVolume(prox.ambienceVolume(heat))
-    }
-    // "I can see you" the moment the readout turns HOT while still searching. A faint trace that
-    // follows lets it finish (there, but not awake); a haunted lock cuts it for "Bloody Mary".
-    val hot = SoulHeat.band(heat) == SoulHeat.Band.HOT
-    var lastNearMs by remember { mutableLongStateOf(-prox.nearWhisperGapMs) }
-    LaunchedEffect(hot) {
-        if (!hot || !prox.nearWhisper || viewModel.state.value !is GhostState.Searching) return@LaunchedEffect
-        val now = SystemClock.uptimeMillis()
-        if (now - lastNearMs < prox.nearWhisperGapMs) return@LaunchedEffect
-        lastNearMs = now
-        nearVoice.play()
     }
     LaunchedEffect(Unit) {
         while (true) {

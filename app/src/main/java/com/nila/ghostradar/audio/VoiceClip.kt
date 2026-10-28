@@ -67,6 +67,11 @@ class VoiceClip(
         mp.start()
     }
 
+    /** Runs [cb] when the clip that is playing ends; at once if nothing is playing. */
+    fun onFinished(cb: () -> Unit) {
+        if (isPlaying) pendingDone = cb else cb()
+    }
+
     /** Stops the clip and forgets the pending callback (a stop is not a finish). */
     fun stop() {
         pendingDone = null
