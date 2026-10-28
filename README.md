@@ -25,9 +25,10 @@ The same app for iPhone lives in `ios/` (Swift, SwiftUI, same model and numbers)
    camera recognises get a small readout: `CHAIR · NO SOUL`, `BED · NO SOUL`. Nothing else happens.
 3. Point toward a doll or a teddy. Find My style, the radar warms as you get closer: green turns
    amber then red, COLD becomes WARM then HOT, the rings breathe faster, the phone ticks faster and
-   the music speeds up. The arrow swings to the toy. At the lock, one of two things:
+   the music speeds up. The arrow swings to the toy, and as it turns HOT a voice whispers
+   "I can see you". At the lock, one of two things:
    - most of the time a small `FAINT TRACE · NO ANSWER` note appears and that is all;
-   - now and then the radar goes red and says HERE, the phone jolts, whispers "Bloody Mary",
+   - now and then the radar goes red and says HERE, the phone jolts, the voice says "Bloody Mary",
      one of three stingers bangs, and the doll lunges.
 4. After the lunge the screen cuts to black static, SIGNAL LOST. The radar comes back red and
    shaking, says GONE, and cools to green; two seconds in, the face flashes once with a thump.

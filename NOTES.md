@@ -230,12 +230,21 @@ Log: bear at 0.77–0.87 for 34 s straight, locked at 14.9 s into the session �
 - Verified on the iPhone 17 simulator with the demo flag: radar, red HERE lock, scare, SIGNAL LOST static, orange GONE cooldown. Device build signs; install needs the iPhone unlocked.
 - Not yet verified on a real iPhone: camera orientation (connection rotated to portrait, boxes assumed upright 480x640), detection speed, haptic feel, speech voice. First thing to test when the phone is unlocked.
 
+## 2026-10-28 — Nila's voice in (Hari: two WhatsApp voice notes)
+
+- Two recordings from Nila, both now in the app on Android and iOS, trimmed and faded, nothing else done to them (they were already at full scale from WhatsApp):
+  - "Bloody Mary, Bloody Mary" (`voice_bloody_mary.wav`, 3.3 s) replaces the phone's text-to-speech at a haunted lock. `VoiceLine` (TTS on Android, AVSpeechSynthesizer on iOS) is gone; `VoiceClip` preloads one clip and reports when it ends, so the scare still waits for the line (max `voiceMaxHoldMs`, 1.5 s, so the bang lands about halfway through her line — change that number if she wants the whole line first).
+  - "I can see you" (`voice_i_can_see_you.wav`, 4.6 s) is Hari's "whenever we near the ghost": it plays the moment the readout turns HOT while still Searching, not again within `ProximityConfig.nearWhisperGapMs` (6 s). A faint trace that follows lets it finish (there, but not awake); a haunted lock stops it and says Bloody Mary; a scare stops it.
+- Source files kept in `~/Desktop/GhostRadar/nila_voice/` (the original `.opus` notes and the converted WAVs). Listed in ASSETS.md as project-owned, recorded by Nila.
+- Tested: Android debug build on the Moto g (install + launch); iOS debug build on the iPhone. Nila and Hari to judge the levels and whether "I can see you" should fire on HOT or only on a faint trace.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?
 - Does the song play once or loop? What happens on screen when it ends?
 - Is there an "off" switch or a parent mode to stop the scare?
 - Radar colour: green, or something else? (Placeholder is `#39FF14`.)
+- "I can see you": on turning HOT (now), or only on a faint-trace lock? And should the bang wait for the whole "Bloody Mary" line (set `voiceMaxHoldMs` to ~3.5 s) or cut in at 1.5 s as now?
 - Camera rationale copy: current placeholder reads "The camera looks for ghosts hiding in toys. Everything happens on this phone. Nothing is recorded, saved, or sent anywhere." OK, or does she want it spookier?
 - Launcher icon: the current one is a placeholder (green rings + sweep). What does she want?
 - Where should the ⓘ (open-source notices) button live? Top-right on every screen for now.

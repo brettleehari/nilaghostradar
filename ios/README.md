@@ -42,5 +42,4 @@ On a phone, long-press anywhere on the hunt screen (debug builds) for the same t
 - Audio plays through the `.playback` session, so the prank is heard with the mute switch on.
 - Haptics are Core Haptics patterns shaped like the Android waveforms; phones without a Taptic
   engine get a single heavy impact instead.
-- The voice line uses the phone's own speech voice (en-US), pitched down and slowed, like Android TTS.
 - Minimum iOS 17, iPhone only.
