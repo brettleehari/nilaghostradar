@@ -43,6 +43,9 @@ targets:
       - path: GhostRadar/Resources
         buildPhase: resources
         type: group
+      # App Store privacy manifest: no tracking, no data collected, no required-reason APIs.
+      - path: GhostRadar/Support/PrivacyInfo.xcprivacy
+        buildPhase: resources
     dependencies:
       - package: GhostCore
         product: GhostCore
