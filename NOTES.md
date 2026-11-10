@@ -250,11 +250,19 @@ Hari watched both phones hold a faint trace for 15 s and set the sequence himsel
 - Debug long-press now injects the bear for 10 s (was 3 s) so the whole sequence plays, and ignores the no-lock windows.
 
 
+## 2026-11-11 — Background audio, store prep
+
+- Found on the Moto g on 2026-10-28 (Hari pressed home during the aftermath): the stinger kept playing in the launcher, and leaving while Searching would have kept the ambience looping, because the activity stays alive and only disposal released the players. Fixed on both platforms: leaving the hunt screen (ON_STOP / scenePhase not active) pauses the ambience and stops the stinger, both voice clips and the motor; coming back restarts the loop if the radar is still Searching.
+- Publishing: `PUBLISHING.md` is the step list for Play and the App Store with what is done and what Hari must do himself; `PRIVACY.md` is the privacy policy both stores need (camera). iOS: `PrivacyInfo.xcprivacy` (nothing collected), `ITSAppUsesNonExemptEncryption = false`, `ios/ExportOptions.plist` for the App Store Connect upload. Verified: `bundleRelease` 34 MB, release APK passes the 16 KB zipalign check; iOS Release build succeeds and carries the manifest. Blockers are off the Mac: the Play account and closed test (12 testers × 14 days), the Apple Developer Program enrolment (no distribution certificate yet), the final applicationId, screenshots, and Nila's sign-off.
+- The "Open questions for Nila" heading had been lost in the 2026-10-28 sequence commit (the bullets stayed); restored.
+
+## Open questions for Nila
+
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?
 - Does the song play once or loop? What happens on screen when it ends?
 - Is there an "off" switch or a parent mode to stop the scare?
 - Radar colour: green, or something else? (Placeholder is `#39FF14`.)
-- "I can see you": should the bang wait for the whole "Bloody Mary" line (set `voiceMaxHoldMs` to ~3.5 s) or cut in at 1.5 s as now?
+- The hunt sequence (README table) is Hari's and is a 6 s build-up from lock to bang; does she accept it? Should the bang wait for her whole "Bloody Mary" line (`bangAfterLineMs` ≈ 3 500) or cut in at 1.5 s as now?
 - Camera rationale copy: current placeholder reads "The camera looks for ghosts hiding in toys. Everything happens on this phone. Nothing is recorded, saved, or sent anywhere." OK, or does she want it spookier?
 - Launcher icon: the current one is a placeholder (green rings + sweep). What does she want?
 - Where should the ⓘ (open-source notices) button live? Top-right on every screen for now.
