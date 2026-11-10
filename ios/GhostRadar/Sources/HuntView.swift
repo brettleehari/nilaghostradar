@@ -49,8 +49,13 @@ struct HuntView: View {
         .onDisappear(perform: stopAll)
         .onChange(of: scenePhase) { _, phase in
             switch phase {
-            case .active: vm.onHuntResumed(); camera.start()
-            case .background, .inactive: vm.onHuntPaused(); camera.stop()
+            case .active:
+                vm.onHuntResumed(); camera.start()
+                if vm.state.isSearching { ambience?.play() }
+            case .background, .inactive:
+                // Leaving silences everything; the scene stays alive, so nothing else would.
+                vm.onHuntPaused(); camera.stop()
+                ambience?.pause(); audio?.stop(); nearVoice.stop(); lockVoice.stop(); haptics.stop()
             @unknown default: break
             }
         }

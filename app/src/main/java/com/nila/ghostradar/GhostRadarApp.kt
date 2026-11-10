@@ -148,9 +148,17 @@ fun HuntScreen(viewModel: GhostViewModel = viewModel()) {
         }
     }
 
-    // A session is one hunt; a long time away (home, screen off) starts a fresh one.
-    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { viewModel.onHuntPaused() }
-    LifecycleEventEffect(Lifecycle.Event.ON_START) { viewModel.onHuntResumed() }
+    // A session is one hunt; a long time away (home, screen off) starts a fresh one. Leaving also
+    // silences everything (the activity stays alive, so nothing else would), and coming back brings
+    // the loop back if the radar is still searching.
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        viewModel.onHuntPaused()
+        ambience.pause(); audio.stop(); nearVoice.stop(); lockVoice.stop(); haptics.stop()
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        viewModel.onHuntResumed()
+        if (viewModel.state.value is GhostState.Searching) ambience.play()
+    }
 
     val prox = viewModel.proximity
     val sequence = viewModel.sequence
