@@ -11,7 +11,7 @@ What is done, what Hari must do himself (accounts, money, permanent names), and 
 | Store name. "Nila" alone is likely taken on both stores; "Nila Diha's Ghost Radar" is the draft | **Nila and Hari** |
 | Nila's sign-off: evil face, three stingers, three loops, her two voice lines, icon, radar colour and words | **Open** (NOTES.md) |
 | Privacy policy URL (both stores need one because of the camera) | `PRIVACY.md` is written. Publish it as a web page: GitHub → repo Settings → Pages → deploy from `main`, then the URL is `https://brettleehari.github.io/nilaghostradar/PRIVACY` |
-| Screenshots from real phones: the radar (green), the lock (red HERE), the scare | **To take**. Play: at least 2, 16:9 or 9:16, 320–3840 px. App Store: 6.9" iPhone set (1320×2868) is required; 6.5" optional |
+| Screenshots: the radar (green), the lock (red HERE), the scare | App Store 6.9" set (1320×2868) is in `store/ios/`, taken from the simulator demo (see `ios/README.md`); the scare frame shows the face on black because the simulator has no camera, so a real-phone scare shot (side button + volume up during a hunt) would be better. Play: at least 2, 16:9 or 9:16, 320–3840 px, **to take** |
 | Reviewer help: reviewers will not have a teddy bear in front of them | Put a 20 s phone video of the hunt in the review notes (both stores), plus "point the camera at a teddy bear; the scare follows about 6 s after the lock" |
 | Backups of `~/keystores/ghostradar-upload.jks` and `keystore.properties` | **Hari** (password manager + a second disk) |
 
@@ -36,7 +36,7 @@ What is done, what Hari must do himself (accounts, money, permanent names), and 
 
 ## 2. App Store
 
-1. **Account.** developer.apple.com/programs → enrol as an individual with the Apple ID `brettleehari@icloud.com` (yearly fee; approval can take up to 48 h). Until then the Mac only has an *Apple Development* certificate, which cannot upload.
+1. **Account.** developer.apple.com/programs → enrol as an individual with the Apple ID `brettleehari@icloud.com` (yearly fee; approval can take up to 48 h). Until then the Mac only has an *Apple Development* certificate, which cannot upload. Tried on 2026-11-11: the archive builds, the export stops with "App Store Connect access for AJ4SSKV57N is required", which is exactly this enrolment.
 2. **After enrolment**, in Xcode → Settings → Accounts, sign in so automatic signing can make the *Apple Distribution* certificate and the App Store profile.
 3. **App Store Connect** → My Apps → + → New App: iOS, name, primary language, bundle id `io.github.brettleehari.ghostradar`, SKU `ghostradar`. The bundle id appears in the list once Xcode has registered it (or add it under Certificates, Identifiers & Profiles → Identifiers, capabilities: none).
 4. **Archive and upload** (version in `ios/project.yml`: `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`; bump the build number for every upload):
@@ -51,7 +51,7 @@ What is done, what Hari must do himself (accounts, money, permanent names), and 
 5. **TestFlight**: the build appears after processing (10–30 min). Internal testers (your team, up to 100) need no review; external testers (link, up to 10 000) need a short Beta App Review the first time.
 6. **App information**: name, subtitle, category Entertainment, **age rating questionnaire** (Horror/Fear themes: infrequent or mild → usually 9+ or 12+; everything else none), privacy policy URL, support URL (the GitHub repo is fine).
 7. **App Privacy**: "Data Not Collected". Matches the manifest.
-8. **Version page**: screenshots, description, keywords, what's new, review notes with the demo video, contact phone and email for the reviewer. Pricing: free, all territories or India + the ones you want.
+8. **Version page**: screenshots, description, keywords, what's new, review notes with the demo video, contact phone and email for the reviewer. Pricing: free, all territories or India + the ones you want. Every field is drafted in `APP_STORE_LISTING.md`.
 9. **Submit for Review** → typically 1–3 days → Release manually or automatically.
 
 ## 3. After the first release

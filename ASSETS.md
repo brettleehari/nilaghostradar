@@ -17,6 +17,8 @@ Every image, sound and model shipped in the app is listed here with its source a
 | Voice: "I can see you" | `app/src/main/res/raw/voice_i_can_see_you.wav`, `ios/GhostRadar/Resources/voice_i_can_see_you.wav` (4.6 s, 48 kHz mono) | Recorded by Nila Diha (WhatsApp voice note, 2026-10-28); same treatment | Project's own | Final — plays once in full when a toy is found (step 2 of the hunt sequence) |
 | Launcher icon | `app/src/main/res/drawable/ic_launcher_foreground.xml` + `mipmap-anydpi-v26/` | Drawn in-repo: radar rings, sweep, ghost | Project's own | v1 — awaiting Nila's sign-off |
 | Play icon (512×512) | `store/icon_512.png` | Same design, rasterised | Project's own | v1 |
+| App Store icon (1024×1024) | `ios/GhostRadar/Assets.xcassets/AppIcon.appiconset/icon_1024.png` | Same design, flattened onto black (App Store Connect rejects an icon with an alpha channel) | Project's own | v1 |
+| App Store screenshots (6.9") | `store/ios/01…06.png` (1320×2868) | Simulator demo hunt, debug panel hidden, status bar 9:41 | Project's own | v1 — Nila to approve; the scare frame is better from a real phone |
 | Feature graphic (1024×500) | `store/feature_graphic_1024x500.png` | Same design + title + tagline | Project's own | v1 — copy is Nila's call |
 | Radar ping / Geiger click SFX | not added | — | — | Not planned for v1 (no build-up per the brief) |
 

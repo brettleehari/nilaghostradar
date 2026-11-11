@@ -32,7 +32,11 @@ final class VoiceClip: NSObject, AVAudioPlayerDelegate {
         pendingDone = onDone
         log.info("voice: \"\(self.says, privacy: .public)\"")
         p.currentTime = 0
-        p.play()
+        if !p.play() {
+            // A line that will not start must not hold the hunt at "listening" forever.
+            log.error("voice: \"\(self.says, privacy: .public)\" would not play")
+            finish()
+        }
     }
 
     /// Runs `cb` when the clip that is playing ends; at once if nothing is playing.

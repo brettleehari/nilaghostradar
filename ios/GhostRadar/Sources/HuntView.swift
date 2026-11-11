@@ -37,7 +37,10 @@ struct HuntView: View {
                 if blackout { SignalLostView() }
                 if aftershock { AftershockFlashView() }
                 #if DEBUG
-                DebugPanel(frame: vm.lastFrame, state: vm.state)
+                // GHOSTRADAR_CLEAN=1 hides the panel for store screenshots taken from the demo build.
+                if ProcessInfo.processInfo.environment["GHOSTRADAR_CLEAN"] == nil {
+                    DebugPanel(frame: vm.lastFrame, state: vm.state)
+                }
                 Color.clear.contentShape(Rectangle())
                     .onLongPressGesture(minimumDuration: 0.6) { vm.injectFakeTarget() }
                 #endif

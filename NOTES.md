@@ -256,6 +256,16 @@ Hari watched both phones hold a faint trace for 15 s and set the sequence himsel
 - Publishing: `PUBLISHING.md` is the step list for Play and the App Store with what is done and what Hari must do himself; `PRIVACY.md` is the privacy policy both stores need (camera). iOS: `PrivacyInfo.xcprivacy` (nothing collected), `ITSAppUsesNonExemptEncryption = false`, `ios/ExportOptions.plist` for the App Store Connect upload. Verified: `bundleRelease` 34 MB, release APK passes the 16 KB zipalign check; iOS Release build succeeds and carries the manifest. Blockers are off the Mac: the Play account and closed test (12 testers × 14 days), the Apple Developer Program enrolment (no distribution certificate yet), the final applicationId, screenshots, and Nila's sign-off.
 - The "Open questions for Nila" heading had been lost in the 2026-10-28 sequence commit (the bullets stayed); restored.
 
+## 2026-11-11 — iOS submission pass
+
+- Release build (not Debug) installed on the iPhone and run with log streaming: hunt start, portrait camera, detector and ambience all fine; no toy was in view so no lock in that run.
+- `xcodebuild archive` succeeds with the development certificate; `-exportArchive` to App Store Connect stops at "App Store Connect access for AJ4SSKV57N is required". That is the Apple Developer Program enrolment, nothing in the project.
+- App Store icon had semi-transparent pixels in the glow (alpha 120–255). App Store Connect rejects that, so it is flattened onto black. Same picture.
+- `VoiceClip.play` on iOS now calls `onDone` when `AVAudioPlayer.play()` returns false; before, a line that failed to start would have held the hunt at "listening" until the toy left. Android already handled this through its error listener.
+- 6.9" screenshots for the App Store taken from a private "GhostRadar Shots" iPhone 17 Pro Max simulator running the demo build with the new `GHOSTRADAR_CLEAN=1` switch (hides the debug panel). Saved in `store/ios/`. The booted iPhone 18 Pro Max simulator belongs to another project and was left as found.
+- `APP_STORE_LISTING.md` drafts every App Store Connect field (name, subtitle, description, keywords, age rating answers, review notes). Nila rewrites the words.
+- Seen in the simulator only: both voice lines "finish" at once there, so the scare comes 2.5 s after the lock instead of ~6 s. On the iPhone the lines play in full (2026-10-28 logs). Simulator audio quirk, not a bug.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?

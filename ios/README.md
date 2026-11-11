@@ -37,6 +37,10 @@ SIMCTL_CHILD_GHOSTRADAR_DEMO=1 xcrun simctl launch booted io.github.brettleehari
 
 On a phone, long-press anywhere on the hunt screen (debug builds) for the same thing.
 
+`GHOSTRADAR_CLEAN=1` alongside it hides the debug panel. That is how the App Store screenshots in
+`store/ios/` were taken: an iPhone 17 Pro Max simulator (1320×2868), status bar overridden to 9:41,
+`xcrun simctl io <udid> screenshot` every quarter second through one demo hunt.
+
 ## Differences from Android, on purpose
 
 - Audio plays through the `.playback` session, so the prank is heard with the mute switch on.
