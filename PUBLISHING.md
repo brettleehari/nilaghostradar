@@ -2,18 +2,16 @@
 
 What is done, what Hari must do himself (accounts, money, permanent names), and the exact commands. Nila signs off the assets and the words before anything goes public.
 
-## 0. Before either store
+## Begin here
 
-| Item | Status |
-|---|---|
-| Final Android `applicationId` (now the placeholder `com.nila.ghostradar`; **permanent after the first upload**) | **Hari to choose**, then change `app/build.gradle.kts` and the package directory |
-| iOS bundle id `io.github.brettleehari.ghostradar` (permanent after the first upload) | Set in `ios/project.yml`; Hari to confirm |
-| Store name. "Nila" alone is likely taken on both stores; "Nila Diha's Ghost Radar" is the draft | **Nila and Hari** |
-| Nila's sign-off: evil face, three stingers, three loops, her two voice lines, icon, radar colour and words | **Open** (NOTES.md) |
-| Privacy policy URL (both stores need one because of the camera) | `PRIVACY.md` is written. Publish it as a web page: GitHub → repo Settings → Pages → deploy from `main`, then the URL is `https://brettleehari.github.io/nilaghostradar/PRIVACY` |
-| Screenshots from real phones: the radar (green), the lock (red HERE), the scare | **To take**. Play: at least 2, 16:9 or 9:16, 320–3840 px. App Store: 6.9" iPhone set (1320×2868) is required; 6.5" optional |
-| Reviewer help: reviewers will not have a teddy bear in front of them | Put a 20 s phone video of the hunt in the review notes (both stores), plus "point the camera at a teddy bear; the scare follows about 6 s after the lock" |
-| Backups of `~/keystores/ghostradar-upload.jks` and `keystore.properties` | **Hari** (password manager + a second disk) |
+The two accounts take days to clear, so start them first; everything else can happen while you wait.
+
+1. **Today:** register at play.google.com/console (fee + ID verification) and enrol at developer.apple.com/programs (fee, up to 48 h). → Play step 1, App Store step 1.
+2. **Today:** GitHub → repo Settings → Pages → deploy from `main`. The privacy URL both stores ask for becomes `https://brettleehari.github.io/nilaghostradar/PRIVACY`.
+3. **Today:** back up `~/keystores/ghostradar-upload.jks` and `keystore.properties` (password manager + a second disk).
+4. **Before the first upload:** choose the final Android `applicationId` (permanent) and confirm the iOS bundle id. → Play step 2, App Store step 3.
+5. **With Nila:** store name, screenshots, and her sign-off on everything the player sees and hears. → Checklist below.
+6. **When the accounts clear:** Play steps 3–9, App Store steps 2–9.
 
 ## 1. Google Play
 
@@ -54,7 +52,20 @@ What is done, what Hari must do himself (accounts, money, permanent names), and 
 8. **Version page**: screenshots, description, keywords, what's new, review notes with the demo video, contact phone and email for the reviewer. Pricing: free, all territories or India + the ones you want.
 9. **Submit for Review** → typically 1–3 days → Release manually or automatically.
 
-## 3. After the first release
+## 3. Checklist before going public
+
+| Item | Status |
+|---|---|
+| Final Android `applicationId` (now the placeholder `com.nila.ghostradar`; **permanent after the first upload**) | **Hari to choose**, then change `app/build.gradle.kts` and the package directory |
+| iOS bundle id `io.github.brettleehari.ghostradar` (permanent after the first upload) | Set in `ios/project.yml`; Hari to confirm |
+| Store name. "Nila" alone is likely taken on both stores; "Nila Diha's Ghost Radar" is the draft | **Nila and Hari** |
+| Nila's sign-off: evil face, three stingers, three loops, her two voice lines, icon, radar colour and words | **Open** (NOTES.md) |
+| Privacy policy URL (both stores need one because of the camera) | `PRIVACY.md` is written. Publish it as a web page: GitHub → repo Settings → Pages → deploy from `main`, then the URL is `https://brettleehari.github.io/nilaghostradar/PRIVACY` |
+| Screenshots from real phones: the radar (green), the lock (red HERE), the scare | **To take**. Play: at least 2, 16:9 or 9:16, 320–3840 px. App Store: 6.9" iPhone set (1320×2868) is required; 6.5" optional |
+| Reviewer help: reviewers will not have a teddy bear in front of them | Put a 20 s phone video of the hunt in the review notes (both stores), plus "point the camera at a teddy bear; the scare follows about 6 s after the lock" |
+| Backups of `~/keystores/ghostradar-upload.jks` and `keystore.properties` | **Hari** (password manager + a second disk) |
+
+## 4. After the first release
 
 - Keep `versionCode` / build number monotonic on both stores.
 - The private media override slots (`app/src/PRIVATE_MEDIA.md`) do not apply to iOS; the iOS bundle ships what is in `ios/GhostRadar/Resources`.
