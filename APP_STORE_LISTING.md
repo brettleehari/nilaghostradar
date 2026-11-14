@@ -7,17 +7,18 @@ Working notes for the App Store record. Hari owns the account and the upload; Ni
 | Field | Value (draft) | Limit |
 |---|---|---|
 | Name | Nila Diha's Ghost Radar | 30 |
-| Subtitle | Something is hiding in that toy | 30 |
+| Subtitle | Something hides in that toy (the first draft, "Something is hiding in that toy", is 31 characters and was rejected) | 30 |
 | Bundle ID | `io.github.brettleehari.ghostradar` (permanent after the first upload) | — |
 | SKU | `ghostradar` | — |
+| Apple ID (App Store Connect) | 6834949463 | — |
 | Primary language | English (U.S.) | — |
 | Primary category | Entertainment | — |
 | Secondary category | none | — |
 | Content rights | Does not contain, show, or access third-party content | — |
-| Age rating | Horror/Fear Themes: **Infrequent/Mild** → expect 9+ or 12+. Everything else: None. Not made for kids. | — |
-| Pricing | Free, all territories (or the ones Hari picks) | — |
+| Age rating | Entered 2026-11-14: Horror/Fear Themes **Frequent** (the scare is the whole app), everything else None, no in-app controls → Apple calculated **13+** (12+ in Brazil, Korea, Vietnam). Change to Infrequent for a lower rating if Hari prefers. Not made for kids. | — |
+| Pricing | Free, all 175 countries or regions (entered). Mac and Apple Vision Pro availability switched off. | — |
 | Support URL | https://github.com/brettleehari/nilaghostradar | — |
-| Privacy policy URL | https://brettleehari.github.io/nilaghostradar/PRIVACY (needs GitHub Pages switched on) | — |
+| Privacy policy URL | Entered: https://github.com/brettleehari/nilaghostradar/blob/main/PRIVACY.md (public already). Swap to https://brettleehari.github.io/nilaghostradar/PRIVACY once GitHub Pages is on. | — |
 
 ## App Privacy
 
@@ -42,7 +43,8 @@ Working notes for the App Store record. Hari owns the account and the upload; Ni
 
 ## App Review information
 
-- Sign-in required: No.
+- Sign-in required: No (entered).
+- Release: Manual (Hari presses Release after approval). Entered.
 - Contact: Hariprasad Sudharshan, hariprasadsudharsan@gmail.com, phone number Hari adds in the console.
 - **Notes for the reviewer** (draft):
 
@@ -56,11 +58,11 @@ See `PUBLISHING.md` section 2 for the archive and upload commands. Version numbe
 
 ## Pre-submit checklist
 
-- [ ] Apple Developer Program enrolment approved (the Mac then gets an *Apple Distribution* certificate).
-- [ ] App record created with the bundle id above.
+- [x] Apple Developer Program enrolment approved (2026-11-14; the updated Program License Agreement had to be accepted too). The *Apple Distribution* certificate appears with the first successful export.
+- [x] App record created with the bundle id above (2026-11-14, Apple ID 6834949463).
 - [ ] Nila signs off the face, stingers, loops, her two voice lines, icon and all words on this page.
-- [ ] Screenshots uploaded (6.9").
-- [ ] Privacy policy URL live.
+- [x] Screenshots uploaded (6.9", the six in `store/ios/`, 2026-11-14).
+- [x] Privacy policy URL live (GitHub page of `PRIVACY.md`).
 - [ ] Build uploaded, visible in TestFlight, installed and run once on the iPhone from TestFlight.
-- [ ] Age rating, App Privacy, review notes and video filled in.
+- [x] Age rating, App Privacy (published), review contact and notes filled in. Review video still to attach (Hari records it).
 - [ ] Submit for Review.

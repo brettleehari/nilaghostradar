@@ -36,9 +36,9 @@ What is done, what Hari must do himself (accounts, money, permanent names), and 
 
 ## 2. App Store
 
-1. **Account.** developer.apple.com/programs → enrol as an individual with the Apple ID `brettleehari@icloud.com` (yearly fee; approval can take up to 48 h). Until then the Mac only has an *Apple Development* certificate, which cannot upload. Tried on 2026-11-11: the archive builds, the export stops with "App Store Connect access for AJ4SSKV57N is required", which is exactly this enrolment.
+1. **Account.** developer.apple.com/programs → enrol as an individual with the Apple ID `brettleehari@icloud.com` (yearly fee; approval can take up to 48 h). Until then the Mac only has an *Apple Development* certificate, which cannot upload. Enrolled 2026-11-14 (Individual, Team ID `AJ4SSKV57N`). Note: Apple re-issued the Program License Agreement after the enrolment and suspended App Store Connect access until the Account Holder accepted it on developer.apple.com → Account; that is what "App Store Connect access for AJ4SSKV57N is required" from `-exportArchive` meant. Xcode also caches the team's access state: after accepting, sign out and back in under Xcode → Settings → Accounts, or export with an App Store Connect API key (`-authenticationKeyPath … -authenticationKeyID … -authenticationKeyIssuerID …`).
 2. **After enrolment**, in Xcode → Settings → Accounts, sign in so automatic signing can make the *Apple Distribution* certificate and the App Store profile.
-3. **App Store Connect** → My Apps → + → New App: iOS, name, primary language, bundle id `io.github.brettleehari.ghostradar`, SKU `ghostradar`. The bundle id appears in the list once Xcode has registered it (or add it under Certificates, Identifiers & Profiles → Identifiers, capabilities: none).
+3. **App Store Connect** → My Apps → + → New App: iOS, name, primary language, bundle id `io.github.brettleehari.ghostradar`, SKU `ghostradar`. **Done 2026-11-14**: App ID registered (no capabilities), app created, Apple ID 6834949463.
 4. **Archive and upload** (version in `ios/project.yml`: `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION`; bump the build number for every upload):
    ```
    cd ios && ./generate_project.sh
@@ -49,9 +49,9 @@ What is done, what Hari must do himself (accounts, money, permanent names), and 
    ```
    Already in place: `PrivacyInfo.xcprivacy` (no tracking, no data, no required-reason APIs), `ITSAppUsesNonExemptEncryption = false` (no export-compliance question per build), `NSCameraUsageDescription`.
 5. **TestFlight**: the build appears after processing (10–30 min). Internal testers (your team, up to 100) need no review; external testers (link, up to 10 000) need a short Beta App Review the first time.
-6. **App information**: name, subtitle, category Entertainment, **age rating questionnaire** (Horror/Fear themes: infrequent or mild → usually 9+ or 12+; everything else none), privacy policy URL, support URL (the GitHub repo is fine).
-7. **App Privacy**: "Data Not Collected". Matches the manifest.
-8. **Version page**: screenshots, description, keywords, what's new, review notes with the demo video, contact phone and email for the reviewer. Pricing: free, all territories or India + the ones you want. Every field is drafted in `APP_STORE_LISTING.md`.
+6. **App information**: name, subtitle, category Entertainment, **age rating questionnaire** (Horror/Fear themes Frequent → 13+; everything else none), privacy policy URL, support URL (the GitHub repo is fine). **Done 2026-11-14.**
+7. **App Privacy**: "Data Not Collected". Matches the manifest. **Published 2026-11-14.**
+8. **Version page**: screenshots, description, keywords, what's new, review notes with the demo video, contact phone and email for the reviewer. Pricing: free, all territories or India + the ones you want. Every field is drafted in `APP_STORE_LISTING.md`. **Done 2026-11-14** except the review video and the build itself.
 9. **Submit for Review** → typically 1–3 days → Release manually or automatically.
 
 ## 3. After the first release

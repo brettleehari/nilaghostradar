@@ -266,6 +266,16 @@ Hari watched both phones hold a faint trace for 15 s and set the sequence himsel
 - `APP_STORE_LISTING.md` drafts every App Store Connect field (name, subtitle, description, keywords, age rating answers, review notes). Nila rewrites the words.
 - Seen in the simulator only: both voice lines "finish" at once there, so the scare comes 2.5 s after the lock instead of ~6 s. On the iPhone the lines play in full (2026-10-28 logs). Simulator audio quirk, not a bug.
 
+## 2026-11-14 — App Store Connect record created
+
+- Enrolment is live: Team ID `AJ4SSKV57N`, Apple Developer Program, Individual, renews 2027-09-23. Apple had issued a new Program License Agreement after enrolment and the account page said access to Certificates, App Store Connect and the API was suspended until it was accepted; Hari accepted it on 2026-11-14.
+- Registered the explicit App ID `io.github.brettleehari.ghostradar` (no capabilities) and created the App Store Connect app: "Nila Diha's Ghost Radar", SKU `ghostradar`, Apple ID 6834949463, English (U.S.).
+- Filled in from `APP_STORE_LISTING.md`: subtitle (trimmed to "Something hides in that toy", the draft was 31 characters and Apple allows 30), category Entertainment, content rights "no third-party content", age rating (Horror/Fear Themes **Frequent**, everything else none → Apple calculated 13+, 12+ in Brazil/Korea/Vietnam), price free in all 175 countries, Mac and Apple Vision Pro availability off (the app needs the rear camera and the motor), App Privacy "Data Not Collected" published, privacy policy URL (the GitHub page of `PRIVACY.md` until GitHub Pages is on), promotional text, description, keywords, support URL, copyright, review contact and notes, release type Manual.
+- Six 6.9" screenshots from `store/ios/` are uploaded and processed (1320×2868, set APP_IPHONE_67). The new App Store Connect version page has no visible screenshot section in this browser window, so they went through the same web API the page uses.
+- `MARKETING_VERSION` in `ios/project.yml` is now `1.0` to match the App Store version; the archive was rebuilt (1.0 build 1).
+- Still blocked: `xcodebuild -exportArchive` keeps saying "App Store Connect access for AJ4SSKV57N is required" even after the agreement was accepted and the Apple ID was added in Xcode. Xcode caches the team's access state; a sign-out/sign-in in Xcode → Settings → Accounts, or an App Store Connect API key passed with `-authenticationKeyPath/-authenticationKeyID/-authenticationKeyIssuerID`, gets round it. The Mac still has no Apple Distribution certificate; the first successful export creates it.
+- Not for the implementer: the Chrome window used for App Store Connect reports a 0×0 viewport, so screenshots time out; every step was done through the page's elements instead.
+
 ## Open questions for Nila
 
 - Evil face: her own drawing, or the real doll's face photo-cropped and warped?
@@ -277,3 +287,5 @@ Hari watched both phones hold a faint trace for 15 s and set the sequence himsel
 - Launcher icon: the current one is a placeholder (green rings + sweep). What does she want?
 - Where should the ⓘ (open-source notices) button live? Top-right on every screen for now.
 - Store listing copy and screenshots (see PLAY_LISTING.md).
+- App Store subtitle: "Something hides in that toy" (the 31-character draft did not fit Apple's 30). Her words?
+- App Store age rating answers: Horror/Fear Themes marked Frequent (13+). Hari may prefer Infrequent (lower rating); either way the listing is not for children.
