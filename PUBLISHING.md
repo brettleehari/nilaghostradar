@@ -52,7 +52,7 @@ What is done, what Hari must do himself (accounts, money, permanent names), and 
 6. **App information**: name, subtitle, category Entertainment, **age rating questionnaire** (Horror/Fear themes Frequent → 13+; everything else none), privacy policy URL, support URL (the GitHub repo is fine). **Done 2026-11-14.**
 7. **App Privacy**: "Data Not Collected". Matches the manifest. **Published 2026-11-14.**
 8. **Version page**: screenshots, description, keywords, what's new, review notes with the demo video, contact phone and email for the reviewer. Pricing: free, all territories or India + the ones you want. Every field is drafted in `APP_STORE_LISTING.md`. **Done 2026-11-14** except the review video and the build itself.
-9. **Submit for Review** → typically 1–3 days → Release manually or automatically.
+9. **Submit for Review** → typically 1–3 days → Release manually or automatically. **Submitted 2026-11-15** (version 1.0, build 1, Waiting for Review; release type Manual). Check the state without a browser: `python3 ios/asc_api.py GET "/v1/apps/6834949463/reviewSubmissions"`.
 
 ## 3. After the first release
 

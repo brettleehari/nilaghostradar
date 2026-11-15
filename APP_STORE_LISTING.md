@@ -65,4 +65,4 @@ See `PUBLISHING.md` section 2 for the archive and upload commands. Version numbe
 - [x] Privacy policy URL live (GitHub page of `PRIVACY.md`).
 - [x] Build uploaded (1.0 build 1, 2026-11-14). Still to do: install and run it once on the iPhone from TestFlight.
 - [x] Age rating, App Privacy (published), review contact and notes filled in. Review video still to attach (Hari records it).
-- [ ] Submit for Review.
+- [x] Submit for Review. Submitted 2026-11-15 (review submission 05e79153, version 1.0 with build 1, state Waiting for Review). Release stays Manual: after approval press Release This Version.
