@@ -63,6 +63,6 @@ See `PUBLISHING.md` section 2 for the archive and upload commands. Version numbe
 - [ ] Nila signs off the face, stingers, loops, her two voice lines, icon and all words on this page.
 - [x] Screenshots uploaded (6.9", the six in `store/ios/`, 2026-11-14).
 - [x] Privacy policy URL live (GitHub page of `PRIVACY.md`).
-- [ ] Build uploaded, visible in TestFlight, installed and run once on the iPhone from TestFlight.
+- [x] Build uploaded (1.0 build 1, 2026-11-14). Still to do: install and run it once on the iPhone from TestFlight.
 - [x] Age rating, App Privacy (published), review contact and notes filled in. Review video still to attach (Hari records it).
 - [ ] Submit for Review.
