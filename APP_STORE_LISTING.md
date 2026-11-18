@@ -46,11 +46,21 @@ Working notes for the App Store record. Hari owns the account and the upload; Ni
 - Sign-in required: No (entered).
 - Release: Manual (Hari presses Release after approval). Entered.
 - Contact: Hariprasad Sudharshan, hariprasadsudharsan@gmail.com, phone number Hari adds in the console.
-- **Notes for the reviewer** (draft):
+- **Notes for the reviewer** (entered 2026-11-18, after the Guideline 2.1 "Information Needed" rejection; answers Apple's six points):
 
-  This is a camera-based prank. Point the rear camera at a teddy bear (any plush toy works best) in a well-lit room. The radar shows "SIGNAL FOUND · LISTENING", a child's voice says "I can see you", and about six seconds after the lock the phone vibrates, a stinger plays and the toy's face changes on screen. Point away and it stops. The camera runs entirely on device; nothing is recorded or transmitted. A 20-second demo video is attached.
+  HOW TO TEST: Open the app, tap Start hunting, allow the camera, then point the REAR camera at a teddy bear or any plush toy, about 1 m away, in a well-lit room. The radar readout warms up (COLD → WARM → HOT → HERE). When the toy is recognised the radar shows "SIGNAL FOUND · LISTENING" and a child's voice says "I can see you". Keep the camera on the toy: about six seconds later the phone vibrates, a voice says "Bloody Mary", a stinger plays and the toy's face changes on screen and lunges toward the viewer. Point the camera away and everything stops; the toy looks normal again. A screen recording of this flow on a physical iPhone is attached.
 
-- Attachment: a phone video of one full hunt (record with another phone; Hari to make).
+  PURPOSE AND AUDIENCE: A Halloween prank / novelty entertainment app for teens and adults who want to startle a friend. The phone pretends to be a ghost detector; the camera recognises a toy and a jump scare follows. There is nothing to win, buy or save. It is not marketed to children (age rating 13+).
+
+  SETUP: No account, no sign-in, no sample files, no in-app purchases. The only permission is the camera. The app also uses the vibration motor and the speaker.
+
+  EXTERNAL SERVICES: None. The app has no network code at all. Object recognition runs on the device with a bundled open-source MediaPipe EfficientDet-Lite0 model (Apache-2.0). No data provider, authentication service, payment processor, analytics or AI service is used. Nothing is recorded, saved or transmitted; App Privacy is "Data Not Collected".
+
+  REGIONAL DIFFERENCES: None. The app works identically in every region; the only language is English.
+
+  REGULATED INDUSTRY / THIRD-PARTY MATERIAL: Not applicable. All sounds, voice lines (recorded by the developer's family), images and the icon were made for this app and are owned by the developer; the only third-party component is the Apache-2.0 model, credited on the in-app Open source licences screen.
+
+- Attachment: a screen recording made ON the iPhone (Control Center → Screen Recording, with microphone on), starting at the Home Screen and showing: launch, Start hunting, the camera permission, the radar warming up, the lock, the scare, pointing away. 30–60 s, MP4/MOV, under 500 MB. Hari records it; the implementer attaches it and resubmits.
 
 ## Build
 
@@ -65,4 +75,5 @@ See `PUBLISHING.md` section 2 for the archive and upload commands. Version numbe
 - [x] Privacy policy URL live (GitHub page of `PRIVACY.md`).
 - [x] Build uploaded (1.0 build 1, 2026-11-14). Still to do: install and run it once on the iPhone from TestFlight.
 - [x] Age rating, App Privacy (published), review contact and notes filled in. Review video still to attach (Hari records it).
-- [x] Submit for Review. Submitted 2026-11-15 (review submission 05e79153, version 1.0 with build 1, state Waiting for Review). Release stays Manual: after approval press Release This Version.
+- [x] Submit for Review. Submitted 2026-11-15 (review submission 05e79153, version 1.0 with build 1). Release stays Manual: after approval press Release This Version.
+- [ ] **Rejected 2026-11-18, Guideline 2.1 Information Needed** (new-app submission: Apple wants a device screen recording plus purpose, setup, external services, regional differences, regulated-material statements in the notes). Notes rewritten and saved the same day. Still to do: attach the recording, then Resubmit to App Review.
